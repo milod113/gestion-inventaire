@@ -1,0 +1,99 @@
+Tu es un agent IA chargé d’analyser et de faire évoluer mon application de gestion d’inventaire.
+
+## Objectif
+
+Mettre en place une traçabilité fiable des actions effectuées dans l’application. Les utilisateurs autorisés doivent pouvoir corriger les données, notamment les factures et les articles, tout en conservant un historique complet indiquant qui a fait quoi, quand et pourquoi.
+
+Je veux aussi que toutes les actions importantes réalisées dans le projet soient enregistrées avec l’utilisateur qui les a effectuées.
+
+## Méthode de travail obligatoire
+
+1. Commence par analyser la structure du projet, ses technologies, son système d’authentification et ses principales fonctionnalités.
+2. Repère les tables et opérations concernant les factures, les articles, les imports, les utilisateurs, ainsi que les autres actions importantes de l’application.
+3. Présente-moi un état des lieux et un plan d’implémentation détaillé, adapté au projet.
+4. Ne modifie aucun fichier, aucune base de données et aucune donnée avant que je valide explicitement le plan.
+5. Après validation seulement, réalise le travail progressivement. Explique les changements et les impacts avant les opérations sensibles.
+6. Ne supprime ni ne réécris les données existantes. Prévois une migration réversible et une sauvegarde avant tout changement de schéma ou de données.
+7. N’invente pas de structure ou de règles métier : si une information indispensable manque, pose-moi une question précise.
+
+## Exigences fonctionnelles
+
+### A. Journal d’audit général
+
+Enregistrer les actions importantes effectuées dans l’application, avec au minimum :
+
+- l’utilisateur responsable, identifié par son identifiant stable ;
+- le type d’action : création, modification, suppression, connexion, import, export, validation, changement de statut, etc. ;
+- le type d’objet concerné : facture, article, utilisateur, import ou autre ;
+- l’identifiant de l’objet concerné, s’il existe ;
+- la date et l’heure, enregistrées de manière cohérente ;
+- le résultat de l’action : réussite ou échec, lorsque c’est pertinent ;
+- la source de l’action : interface, import, API ou traitement automatique ;
+- un identifiant de requête ou de lot pour relier les événements associés ;
+- les informations utiles pour comprendre l’action, sans enregistrer de secrets.
+
+Enregistrer les actions à un endroit central et cohérent afin d’éviter que des fonctionnalités importantes échappent au suivi. Les tâches automatiques sans utilisateur humain doivent indiquer clairement qu’elles ont été déclenchées par le système, et conserver si possible l’utilisateur à l’origine du déclenchement.
+
+### B. Historique détaillé des factures et des articles
+
+Lorsqu’une facture ou un article est créé, modifié ou supprimé, conserver une trace comprenant :
+
+- l’objet et son identifiant ;
+- les valeurs avant et après l’opération, ou un instantané permettant de les reconstituer ;
+- les champs modifiés ;
+- l’utilisateur responsable ;
+- la date et l’heure ;
+- la raison de la modification, obligatoire pour les corrections manuelles sensibles ;
+- la source de l’opération ;
+- le lien éventuel avec un import ou une action groupée.
+
+Ne jamais remplacer l’historique précédent lors d’une nouvelle modification. Une correction de l’historique ne doit pas effacer la trace initiale : elle doit créer un nouvel événement explicatif.
+
+### C. Imports
+
+Pour chaque import, tracer :
+
+- l’utilisateur qui l’a lancé ;
+- la date et l’heure ;
+- le nom et le type du fichier, sans exposer de contenu confidentiel inutilement ;
+- un identifiant de lot ;
+- les objets créés, modifiés, ignorés ou en erreur ;
+- le résultat et le résumé de l’import ;
+- la raison fournie, si l’import corrige des données existantes.
+
+Prévoir une prévisualisation des changements avant confirmation lorsque le fonctionnement actuel le permet. Relier chaque modification issue de l’import à son lot. Ne pas conserver une copie de fichier contenant des données sensibles sans évaluer d’abord les règles de sécurité, d’accès et de conservation du projet.
+
+### D. Intégrité et sécurité de l’audit
+
+- Enregistrer la modification des données et sa trace dans une même transaction lorsque la base de données le permet.
+- Si l’enregistrement de la trace échoue, ne pas appliquer silencieusement une modification sensible sans audit.
+- Empêcher les utilisateurs ordinaires de modifier ou supprimer les événements d’audit.
+- Limiter la consultation de l’historique aux rôles autorisés.
+- Ne jamais journaliser les mots de passe, jetons, clés secrètes ou données sensibles qui ne sont pas nécessaires à l’audit.
+- Prévoir une politique de conservation et des sauvegardes adaptées au projet.
+- Éviter de journaliser des informations personnelles superflues.
+
+### E. Consultation
+
+Prévoir une manière adaptée au projet de consulter l’historique, avec des filtres par :
+
+- objet et identifiant ;
+- utilisateur ;
+- type d’action ;
+- période ;
+- source ou lot d’import.
+
+La consultation doit afficher clairement les anciennes et nouvelles valeurs, la raison et l’utilisateur responsable, selon les droits d’accès. Elle ne doit pas permettre de modifier les événements d’audit.
+
+## Exigences techniques et de qualité
+
+- Respecte l’architecture, les conventions et les versions déjà utilisées dans le projet.
+- Réutilise le système d’authentification et les rôles existants.
+- Identifie les actions déjà couvertes par des journaux ou historiques afin d’éviter les doublons.
+- Vérifie les cas de modifications en lot, d’échecs partiels, d’actions automatiques et de suppressions.
+- Fournis les migrations nécessaires, les éventuels mécanismes de retour arrière et une documentation d’utilisation.
+- Ajoute ou adapte les vérifications nécessaires, puis indique précisément celles qui ont été effectuées et leurs résultats.
+- Ne déclare pas une action « auditée » si son utilisateur ne peut pas être identifié ou si l’événement n’est pas réellement sauvegardé.
+- À la fin, résume les fichiers et schémas modifiés, les actions désormais tracées, les limites restantes et les étapes nécessaires au déploiement.
+
+Commence maintenant par l’analyse en lecture seule du projet et présente-moi ton état des lieux et ton plan. Attends ma validation avant toute modification.
