@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Audited;
 use App\Models\Concerns\HasSource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Article extends Model
 {
-    use HasSource;
+    use Audited, HasSource;
+
+    protected string $auditLabelColumn = 'description';
 
     protected $fillable = [
         'source',

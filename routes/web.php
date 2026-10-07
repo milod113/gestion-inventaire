@@ -9,6 +9,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\DataQualityController;
 use App\Http\Controllers\AdvancedImportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Models\Article;
 use App\Models\Facture;
@@ -89,6 +90,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('admin')->name('admin.')->middleware('role:Administrateur')->group(function () {
         Route::resource('users', AdminUserController::class)->except('show');
+        Route::get('/journal', [ActivityLogController::class, 'index'])->name('journal.index');
         Route::patch('/users/{user}/status', [AdminUserController::class, 'toggleStatus'])->name('users.status');
     });
 });

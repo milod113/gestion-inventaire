@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Audited;
 use App\Models\Concerns\HasSource;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Facture extends Model
 {
-    use HasFactory, HasSource;
+    use Audited, HasFactory, HasSource;
+
+    protected string $auditLabelColumn = 'numero_facture';
 
     protected $fillable = [
         'source',

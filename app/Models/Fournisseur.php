@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Audited;
 use App\Models\Concerns\HasSource;
 use Illuminate\Database\Eloquent\Model;
 
 class Fournisseur extends Model
 {
-    use HasSource;
+    use Audited, HasSource;
+
+    protected string $auditLabelColumn = 'appellation';
 
     protected $fillable = [
         'source',

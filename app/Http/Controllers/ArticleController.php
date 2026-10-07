@@ -191,7 +191,7 @@ class ArticleController extends Controller
 
     public function show(Request $request, Article $article): Response
     {
-        $article->load('service:id,code,name');
+        $article->load('service:id,code,name', 'creator:id,name', 'editor:id,name');
         if ($request->user()->can('factures.view')) {
             $article->load('detailFacture.facture:id,numero_facture');
         }

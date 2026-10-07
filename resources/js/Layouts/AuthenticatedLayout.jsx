@@ -30,7 +30,10 @@ const navigationGroups = [
 
 const adminNavigationGroup = {
     label: 'Administration',
-    items: [{ label: 'Utilisateurs', description: 'Comptes et roles', href: 'admin.users.index', active: 'admin.users.*', icon: 'shield' }],
+    items: [
+        { label: 'Utilisateurs', description: 'Comptes et roles', href: 'admin.users.index', active: 'admin.users.*', icon: 'shield' },
+        { label: 'Journal', description: 'Historique des actions', href: 'admin.journal.index', active: 'admin.journal.*', icon: 'archive' },
+    ],
 };
 
 const helpNavigationGroup = {
@@ -245,6 +248,7 @@ function UserMenu({ user, isAdministrator }) {
                     <p className="truncate text-xs text-muted">{user.email}</p>
                 </div>
                 {isAdministrator && <Dropdown.Link href={route('admin.users.index')}>Gestion utilisateurs</Dropdown.Link>}
+                {isAdministrator && <Dropdown.Link href={route('admin.journal.index')}>Journal d'activité</Dropdown.Link>}
                 <Dropdown.Link href={route('profile.edit')}>Profil</Dropdown.Link>
                 <Dropdown.Link href={route('logout')} method="post" as="button">Deconnexion</Dropdown.Link>
             </Dropdown.Content>

@@ -84,7 +84,7 @@ class FactureController extends Controller
     public function show(Facture $facture): Response
     {
         return Inertia::render('Factures/Show', [
-            'facture' => $facture->load('service:id,code,name'),
+            'facture' => $facture->load('service:id,code,name', 'creator:id,name', 'editor:id,name'),
             'details' => $facture->details()->with('article')->orderBy('id')->paginate(50),
         ]);
     }

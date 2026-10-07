@@ -42,7 +42,7 @@ class FournisseurController extends Controller
 
     public function show(Fournisseur $fournisseur): Response
     {
-        return Inertia::render('Fournisseurs/Show', ['fournisseur' => $fournisseur]);
+        return Inertia::render('Fournisseurs/Show', ['fournisseur' => $fournisseur->load('creator:id,name', 'editor:id,name')]);
     }
 
     public function edit(Fournisseur $fournisseur): Response

@@ -1,3 +1,4 @@
+import AuditInfo from '@/Components/AuditInfo';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 
@@ -15,6 +16,7 @@ export default function Show({ facture, details }) {
                 <div className="mx-auto max-w-6xl space-y-6">
                     {flash.success && <p className="rounded-xl bg-emerald-50 p-4 text-emerald-800">{flash.success}</p>}
                     {flash.error && <p className="rounded-xl bg-red-50 p-4 text-red-800">{flash.error}</p>}
+                    <AuditInfo record={facture} />
                     <section className="overflow-hidden rounded-[2rem] bg-[#163d2e] text-white shadow-2xl shadow-[#12352a]/15">
                         <div className="relative grid gap-8 px-7 py-8 sm:px-10 lg:grid-cols-[1.3fr_0.7fr] lg:items-end lg:py-10">
                             <div className="absolute -left-20 -top-28 h-72 w-72 rounded-full bg-[#2d7454]/60 blur-3xl" />
