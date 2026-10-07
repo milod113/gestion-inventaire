@@ -19,6 +19,7 @@ class FactureController extends Controller
         $serviceReference = $request->string('service_reference')->trim()->value();
         $dateFrom = $request->string('date_from')->trim()->value();
         $dateTo = $request->string('date_to')->trim()->value();
+        $source = $request->string('source')->value();
         $sort = $request->string('sort')->value();
         $direction = $request->string('direction')->value();
         $sort = in_array($sort, ['date', 'amount', 'number'], true) ? $sort : 'date';
@@ -31,6 +32,7 @@ class FactureController extends Controller
 
         $query = Facture::query()
             ->with('service:id,code,name')
+            ->fromSource($source)
             ->when($search, function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('n_bon', 'like', "%{$search}%")
@@ -58,6 +60,7 @@ class FactureController extends Controller
                 'service_reference' => $serviceReference,
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
+                'source' => $source,
                 'sort' => $sort,
                 'direction' => $direction,
             ],
@@ -86,8 +89,12 @@ class FactureController extends Controller
         ]);
     }
 
-    public function edit(Facture $facture): Response
+    public function edit(Facture $facture): Response|RedirectResponse
     {
+        if ($facture->isImported()) {
+            return $this->importedLocked();
+        }
+
         return Inertia::render('Factures/Edit', [
             'facture' => $facture,
             'services' => $this->services(),
@@ -96,6 +103,10 @@ class FactureController extends Controller
 
     public function update(Request $request, Facture $facture): RedirectResponse
     {
+        if ($facture->isImported()) {
+            return $this->importedLocked();
+        }
+
         $data = $this->validatedData($request);
         $data['service_reference_normalisee'] = ServiceReferenceNormalizer::normalize($data['service_reference'] ?? null);
         $facture->update($data);
@@ -105,6 +116,10 @@ class FactureController extends Controller
 
     public function destroy(Facture $facture): RedirectResponse
     {
+        if ($facture->isImported()) {
+            return $this->importedLocked();
+        }
+
         if ($facture->details()->exists()) {
             return back()->with('error', 'Cette facture contient des articles. Retirez leurs liens avant de supprimer la facture.');
         }
@@ -112,6 +127,11 @@ class FactureController extends Controller
         $facture->delete();
 
         return redirect()->route('factures.index')->with('success', 'Facture supprimee avec succes.');
+    }
+
+    private function importedLocked(): RedirectResponse
+    {
+        return redirect()->route('factures.index')->with('error', 'Une facture importee est en lecture seule.');
     }
 
     private function services()

@@ -16,9 +16,11 @@ class ServiceController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->string('search')->trim()->value();
+        $source = $request->string('source')->value();
 
         return Inertia::render('Services/Index', [
             'services' => Service::query()
+                ->fromSource($source)
                 ->withCount('articles')
                 ->withSum('factures', 'montant')
                 ->when($search, function ($query, $search) {
@@ -32,6 +34,7 @@ class ServiceController extends Controller
                 ->withQueryString(),
             'filters' => [
                 'search' => $search,
+                'source' => $source,
             ],
         ]);
     }
@@ -102,6 +105,10 @@ class ServiceController extends Controller
 
     public function destroy(Service $service): RedirectResponse
     {
+        if ($service->articles()->exists() || $service->factures()->exists()) {
+            return back()->with('error', 'Ce service est utilise par des articles ou des factures et ne peut pas etre supprime.');
+        }
+
         $service->delete();
 
         return redirect()

@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
+    use HasSource;
+
     protected $fillable = [
+        'source',
         'code',
         'name',
     ];

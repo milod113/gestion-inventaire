@@ -53,10 +53,12 @@ class ArticleController extends Controller
     {
         $search = $request->string('search')->trim()->value();
         $serviceCode = $request->string('service_code')->trim()->value();
+        $source = $request->string('source')->value();
 
         return Inertia::render('Articles/Index', [
             'articles' => Article::query()
                 ->with('service:id,code,name')
+                ->fromSource($source)
                 ->when($search, function ($query, $search) {
                     $query->where(function ($query) use ($search) {
                         $query->where('description', 'like', "%{$search}%")
@@ -76,7 +78,7 @@ class ArticleController extends Controller
                 ->paginate(50)
                 ->withQueryString(),
             'services' => $this->services(),
-            'filters' => ['search' => $search, 'service_code' => $serviceCode],
+            'filters' => ['search' => $search, 'service_code' => $serviceCode, 'source' => $source],
         ]);
     }
 
@@ -244,6 +246,7 @@ class ArticleController extends Controller
         $serviceCode = $request->string('service_code')->trim()->value();
 
         return Article::query()
+            ->fromSource($request->string('source')->value())
             ->when($search, function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('description', 'like', "%{$search}%")

@@ -145,7 +145,7 @@ class ImportController extends Controller
                 $item = $row->payload;
                 unset($item['source_row']);
 
-                return [...$item, 'import_batch_id' => $batch->id, 'created_at' => now(), 'updated_at' => now()];
+                return [...$item, 'import_batch_id' => $batch->id, 'source' => 'import', 'created_at' => now(), 'updated_at' => now()];
             })->all();
             Fournisseur::upsert($items, ['source_hash'], ['code', 'appellation', 'adresse', 'rc_autres', 'cb_autres', 'telephone', 'telex', 'artv', 'observation', 'import_batch_id', 'updated_at']);
             $batch->update(['status' => 'imported', 'imported_rows' => count($items)]);
@@ -157,7 +157,7 @@ class ImportController extends Controller
                 $item = $row->payload;
                 unset($item['source_row'], $item['source_hash']);
 
-                return [...$item, 'created_at' => now(), 'updated_at' => now()];
+                return [...$item, 'source' => 'import', 'created_at' => now(), 'updated_at' => now()];
             })->all();
 
             if ($items !== []) {
@@ -183,6 +183,7 @@ class ImportController extends Controller
                     ...$article,
                     'service_id' => $serviceIdsByCode[$serviceKey] ?? null,
                     'import_batch_id' => $batch->id,
+                    'source' => 'import',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -267,6 +268,7 @@ class ImportController extends Controller
                 $facture = $row->payload;
                 $facture['service_id'] = $serviceIds[(int) $facture['service_reference']] ?? null;
                 $facture['import_batch_id'] = $batch->id;
+                $facture['source'] = 'import';
                 $facture['created_at'] = now();
                 $facture['updated_at'] = now();
                 return $facture;

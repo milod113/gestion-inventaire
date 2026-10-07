@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Article extends Model
 {
+    use HasSource;
+
     protected $fillable = [
+        'source',
         'service_id',
         'import_batch_id',
         'service_code_source',
