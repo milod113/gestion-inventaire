@@ -1,7 +1,7 @@
 import { DateInput, Field, FormLayout, formatDate, inputClass, Section, ServicePicker, SummaryHeader, SummaryList, SummaryRow } from '@/Components/FormKit';
 import PageHeader, { BackIcon } from '@/Components/PageHeader';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 const quantity = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 });
@@ -10,9 +10,13 @@ const movementTypes = [
     { value: 'S', label: 'Sortie', tone: 'bg-gold-400 text-brand-900' },
 ];
 
-export default function Form({ article = null, services }) {
+export default function Form({ article = null, services, factures = [], factureId = null, factureContext = null }) {
     const editing = Boolean(article);
+    const canLinkFacture = usePage().props.auth.user.permissions.includes('factures.view');
+    const backHref = !editing && factureId ? route('factures.show', factureId) : route('articles.index');
     const { data, setData, post, put, processing, errors, isDirty } = useForm({
+        ...(canLinkFacture ? { facture_id: article?.detail_facture?.facture_id ?? factureId ?? '' } : {}),
+        prix_unitaire: article?.prix_unitaire ?? '',
         service_id: article?.service_id || '',
         description: article?.description || '',
         mouvement: article?.mouvement || '',
@@ -28,12 +32,12 @@ export default function Form({ article = null, services }) {
     const [customMovement, setCustomMovement] = useState(Boolean(article?.mouvement) && !['E', 'S'].includes(article.mouvement));
     const selectedService = services.find((service) => String(service.id) === String(data.service_id));
     const movementLabel = movementTypes.find((type) => type.value === data.mouvement)?.label || data.mouvement;
-    const title = editing ? 'Modifier un article' : 'Nouvel article';
+    const title = editing ? 'Modifier un article' : factureContext ? 'Ajouter un detail de facture' : 'Nouvel article';
 
     const submit = (event) => {
         event.preventDefault();
         const options = { preserveScroll: true };
-        editing ? put(route('articles.update', article.id), options) : post(route('articles.store'), options);
+        editing ? put(route('articles.update', article.id), options) : post(factureContext ? route('factures.details.store', factureContext.id) : route('articles.store'), options);
     };
 
     const text = (name) => ({ id: name, value: data[name], onChange: (event) => setData(name, event.target.value), className: inputClass(errors[name]) });
@@ -49,8 +53,8 @@ export default function Form({ article = null, services }) {
                 <PageHeader
                     eyebrow="Inventaire · Articles"
                     title={title}
-                    description={editing ? article.description : "Enregistrez un mouvement d'inventaire : entree ou sortie de materiel."}
-                    actions={<Link href={route('articles.index')} className="btn-secondary"><BackIcon />Retour a la liste</Link>}
+                    description={editing ? article.description : factureContext ? `Cet article sera ajoute a la facture ${factureContext.numero_facture || `#${factureContext.id}`}.` : "Enregistrez un mouvement d'inventaire : entree ou sortie de materiel."}
+                    actions={<Link href={backHref} className="btn-secondary"><BackIcon />Retour</Link>}
                 />
             }
         >
@@ -61,8 +65,8 @@ export default function Form({ article = null, services }) {
                 errors={errors}
                 processing={processing}
                 isDirty={isDirty}
-                submitLabel={editing ? 'Enregistrer les modifications' : "Enregistrer l'article"}
-                cancelHref={route('articles.index')}
+                submitLabel={editing ? 'Enregistrer les modifications' : factureContext ? 'Ajouter a cette facture' : "Enregistrer l'article"}
+                cancelHref={backHref}
                 summary={<>
                     <SummaryHeader label="Article">
                         <p className={`break-words text-lg font-semibold leading-snug ${data.description ? '' : 'text-brand-100/50'}`}>{data.description || 'Designation a saisir'}</p>
@@ -81,11 +85,20 @@ export default function Form({ article = null, services }) {
                 </>}
             >
                 <Section number="1" title="Article" description="Designation et identification du materiel.">
+                    {canLinkFacture && <Field label="Facture" name="facture_id" error={errors.facture_id} wide>
+                        {factureContext ? <p className="rounded-xl border border-line bg-subtle px-4 py-3 font-semibold">Facture {factureContext.numero_facture || `#${factureContext.id}`}</p> : <select {...text('facture_id')}>
+                            <option value="">Sans facture</option>
+                            {factures.map((facture) => <option key={facture.id} value={facture.id}>Facture {facture.numero_facture || 'Sans numero'} · #{facture.id}{facture.date_facture ? ` · ${facture.date_facture}` : ''}</option>)}
+                        </select>}
+                    </Field>}
                     <Field label="Designation" name="description" error={errors.description} required wide>
                         <input {...text('description')} placeholder="ex. TABLEAU BLANC" autoFocus={!editing} />
                     </Field>
                     <Field label="N° inventaire" name="numero_inventaire" error={errors.numero_inventaire}>
                         <input {...text('numero_inventaire')} placeholder="ex. 35632" className={`${inputClass(errors.numero_inventaire)} font-mono`} />
+                    </Field>
+                    <Field label="Prix unitaire (DZD)" name="prix_unitaire" error={errors.prix_unitaire} hint="Facultatif : laisser vide si inconnu.">
+                        <input {...text('prix_unitaire')} type="number" min="0" max="9999999999999.99" step="0.01" inputMode="decimal" placeholder="Non renseigne" />
                     </Field>
                 </Section>
 

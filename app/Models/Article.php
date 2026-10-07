@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Article extends Model
 {
@@ -12,6 +13,7 @@ class Article extends Model
         'import_batch_id',
         'service_code_source',
         'description',
+        'prix_unitaire',
         'mouvement',
         'date_mouvement',
         'date_source',
@@ -28,6 +30,7 @@ class Article extends Model
     {
         return [
             'date_mouvement' => 'date',
+            'prix_unitaire' => 'decimal:2',
             'quantite_entree' => 'decimal:3',
             'quantite_sortie' => 'decimal:3',
         ];
@@ -36,6 +39,11 @@ class Article extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    public function detailFacture(): HasOne
+    {
+        return $this->hasOne(DetailFacture::class);
     }
 
     public function importBatch(): BelongsTo

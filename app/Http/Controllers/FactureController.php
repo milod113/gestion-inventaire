@@ -73,15 +73,16 @@ class FactureController extends Controller
     {
         $data = $this->validatedData($request);
         $data['service_reference_normalisee'] = ServiceReferenceNormalizer::normalize($data['service_reference'] ?? null);
-        Facture::create($data);
+        $facture = Facture::create($data);
 
-        return redirect()->route('factures.index')->with('success', 'Facture ajoutee avec succes.');
+        return redirect()->route('factures.show', $facture)->with('success', 'Facture ajoutee avec succes.');
     }
 
     public function show(Facture $facture): Response
     {
         return Inertia::render('Factures/Show', [
             'facture' => $facture->load('service:id,code,name'),
+            'details' => $facture->details()->with('article')->orderBy('id')->paginate(50),
         ]);
     }
 
@@ -104,6 +105,10 @@ class FactureController extends Controller
 
     public function destroy(Facture $facture): RedirectResponse
     {
+        if ($facture->details()->exists()) {
+            return back()->with('error', 'Cette facture contient des articles. Retirez leurs liens avant de supprimer la facture.');
+        }
+
         $facture->delete();
 
         return redirect()->route('factures.index')->with('success', 'Facture supprimee avec succes.');

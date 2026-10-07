@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\Facture;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -135,31 +137,91 @@ class ArticleController extends Controller
             ->download('mouvements-inventaire.pdf');
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('Articles/Create', ['services' => $this->services()]);
+        $request->validate(['facture_id' => ['nullable', 'integer', Rule::exists('factures', 'id')]]);
+        if ($request->filled('facture_id')) {
+            abort_unless($request->user()->can('factures.view'), 403);
+        }
+
+        return Inertia::render('Articles/Create', [
+            'services' => $this->services(),
+            'factures' => $this->factures($request),
+            'factureId' => $request->input('facture_id'),
+        ]);
+    }
+
+    public function createForFacture(Facture $facture): Response
+    {
+        return Inertia::render('Articles/Create', [
+            'services' => $this->services(),
+            'factures' => [$facture->only('id', 'numero_facture', 'date_facture')],
+            'factureId' => $facture->id,
+            'factureContext' => $facture->only('id', 'numero_facture'),
+        ]);
+    }
+
+    public function storeForFacture(Request $request, Facture $facture): RedirectResponse
+    {
+        $request->merge(['facture_id' => $facture->id]);
+
+        return $this->store($request);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        Article::create($this->validatedData($request));
+        $data = $this->validatedData($request);
+        $factureId = $data['facture_id'] ?? null;
+        unset($data['facture_id']);
+        DB::transaction(function () use ($data, $factureId) {
+            $article = Article::create($data);
+            if ($factureId !== null) {
+                $article->detailFacture()->create(['facture_id' => $factureId]);
+            }
+        });
+
+        if ($factureId !== null) {
+            return redirect()->route('factures.show', $factureId)->with('success', 'Article ajoute a la facture avec succes.');
+        }
 
         return redirect()->route('articles.index')->with('success', 'Article ajoute avec succes.');
     }
 
-    public function show(Article $article): Response
+    public function show(Request $request, Article $article): Response
     {
-        return Inertia::render('Articles/Show', ['article' => $article->load('service:id,code,name')]);
+        $article->load('service:id,code,name');
+        if ($request->user()->can('factures.view')) {
+            $article->load('detailFacture.facture:id,numero_facture');
+        }
+
+        return Inertia::render('Articles/Show', ['article' => $article]);
     }
 
-    public function edit(Article $article): Response
+    public function edit(Request $request, Article $article): Response
     {
-        return Inertia::render('Articles/Edit', ['article' => $article, 'services' => $this->services()]);
+        return Inertia::render('Articles/Edit', [
+            'article' => $article->load('detailFacture'),
+            'services' => $this->services(),
+            'factures' => $this->factures($request),
+        ]);
     }
 
     public function update(Request $request, Article $article): RedirectResponse
     {
-        $article->update($this->validatedData($request));
+        $data = $this->validatedData($request);
+        $changeLink = array_key_exists('facture_id', $data);
+        $factureId = $data['facture_id'] ?? null;
+        unset($data['facture_id']);
+        DB::transaction(function () use ($article, $data, $changeLink, $factureId) {
+            $article->update($data);
+            if ($changeLink) {
+                if ($factureId === null) {
+                    $article->detailFacture()->delete();
+                } else {
+                    $article->detailFacture()->updateOrCreate([], ['facture_id' => $factureId]);
+                }
+            }
+        });
 
         return redirect()->route('articles.index')->with('success', 'Article modifie avec succes.');
     }
@@ -201,7 +263,13 @@ class ArticleController extends Controller
 
     private function validatedData(Request $request): array
     {
+        if ($request->exists('facture_id')) {
+            abort_unless($request->user()->can('factures.view'), 403);
+        }
+
         return $request->validate([
+            'facture_id' => ['nullable', 'integer', Rule::exists('factures', 'id')],
+            'prix_unitaire' => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99', 'decimal:0,2'],
             'service_id' => ['nullable', 'integer', Rule::exists('services', 'id')],
             'service_code_source' => ['nullable', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:255'],
@@ -214,5 +282,12 @@ class ArticleController extends Controller
             'observation' => ['nullable', 'string'],
             'numero_inventaire' => ['nullable', 'string', 'max:255'],
         ]);
+    }
+
+    private function factures(Request $request)
+    {
+        return $request->user()->can('factures.view')
+            ? Facture::query()->orderByDesc('id')->get(['id', 'numero_facture', 'date_facture'])
+            : [];
     }
 }

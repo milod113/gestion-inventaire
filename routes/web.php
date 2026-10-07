@@ -50,6 +50,13 @@ Route::middleware('auth')->group(function () {
     Route::put('/services/{service}', [ServiceController::class, 'update'])->middleware('permission:services.update')->name('services.update');
     Route::delete('/services/{service}', [ServiceController::class, 'destroy'])->middleware('permission:services.delete')->name('services.destroy');
 
+    Route::get('/factures/{facture}/details/create', [ArticleController::class, 'createForFacture'])
+        ->middleware(['permission:factures.view', 'permission:articles.view', 'permission:articles.create'])
+        ->name('factures.details.create');
+    Route::post('/factures/{facture}/details', [ArticleController::class, 'storeForFacture'])
+        ->middleware(['permission:factures.view', 'permission:articles.view', 'permission:articles.create'])
+        ->name('factures.details.store');
+
     Route::resource('factures', FactureController::class)
         ->middleware('permission:factures.view')
         ->middlewareFor(['create', 'store'], 'permission:factures.create')
