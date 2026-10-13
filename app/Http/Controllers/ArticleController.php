@@ -64,28 +64,24 @@ class ArticleController extends Controller
         $serviceCode = $request->string('service_code')->trim()->value();
         $source = $request->string('source')->value();
 
+        $summary = $this->filteredArticles($request)
+            ->toBase()
+            ->selectRaw('count(*) as total')
+            ->selectRaw("sum(case when numero_inventaire is not null and numero_inventaire <> '' then 1 else 0 end) as with_inventory")
+            ->selectRaw("sum(case when source = 'import' then 1 else 0 end) as imported")
+            ->first();
+
         return Inertia::render('Articles/Index', [
-            'articles' => Article::query()
+            'articles' => $this->filteredArticles($request)
                 ->with('service:id,code,name')
-                ->fromSource($source)
-                ->when($search, function ($query, $search) {
-                    $query->where(function ($query) use ($search) {
-                        $query->where('description', 'like', "%{$search}%")
-                            ->orWhere('numero_inventaire', 'like', "%{$search}%")
-                            ->orWhere('numero_bon', 'like', "%{$search}%")
-                            ->orWhere('service_code_source', 'like', "%{$search}%")
-                            ->orWhereHas('service', fn ($serviceQuery) => $serviceQuery
-                                ->where('code', 'like', "%{$search}%")
-                                ->orWhere('name', 'like', "%{$search}%"));
-                    });
-                })
-                ->when($serviceCode, fn ($query) => $query->where(function ($query) use ($serviceCode) {
-                    $query->where('service_code_source', $serviceCode)
-                        ->orWhereHas('service', fn ($serviceQuery) => $serviceQuery->where('code', $serviceCode));
-                }))
                 ->orderByDesc('date_mouvement')
                 ->paginate(50)
                 ->withQueryString(),
+            'summary' => [
+                'total' => (int) $summary->total,
+                'with_inventory' => (int) $summary->with_inventory,
+                'imported' => (int) $summary->imported,
+            ],
             'services' => $this->services(),
             'filters' => ['search' => $search, 'service_code' => $serviceCode, 'source' => $source],
         ]);
