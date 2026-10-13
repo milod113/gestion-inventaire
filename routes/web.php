@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
         ->middlewareFor(['edit', 'update'], 'permission:fournisseurs.update')
         ->middlewareFor('destroy', 'permission:fournisseurs.delete');
     Route::get('/articles/imprimer', [ArticleController::class, 'print'])->middleware('permission:articles.view')->name('articles.print');
+    Route::get('/articles/etiquettes', [ArticleController::class, 'labels'])->middleware('permission:articles.view')->name('articles.labels');
     Route::get('/articles/suggestions', [ArticleController::class, 'suggestions'])->middleware('permission:articles.view')->name('articles.suggestions');
     Route::resource('articles', ArticleController::class)
         ->middleware('permission:articles.view')
