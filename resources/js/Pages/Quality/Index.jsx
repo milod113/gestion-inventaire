@@ -20,18 +20,20 @@ const highlight = {
     inventaire_doublon: 'inventaire',
     inventaire_manquant: 'inventaire',
     inventaire_non_numerique: 'inventaire',
+    inventaire_plage: 'plage',
+    inventaire_plage_incoherente: 'plage',
     factures_sans_date: 'date',
     factures_montant_nul: 'montant',
     factures_sans_fournisseur: 'fournisseur',
     factures_sans_service: 'service',
 };
 
-export default function Index({ checks, selected, rows, totals, unknownServiceCodes }) {
+export default function Index({ checks, selected, rows, totals, unknownServiceCodes, inventoryRanges }) {
     const { flash = {}, auth } = usePage().props;
     const permissions = auth.user.permissions || [];
     const current = checks.find((check) => check.key === selected);
     const errorCount = checks.filter((check) => check.severity === 'error').reduce((total, check) => total + check.count, 0);
-    const warningCount = checks.filter((check) => check.severity !== 'error').reduce((total, check) => total + check.count, 0);
+    const warningCount = checks.filter((check) => check.severity === 'warning').reduce((total, check) => total + check.count, 0);
 
     return (
         <AuthenticatedLayout
@@ -83,6 +85,8 @@ export default function Index({ checks, selected, rows, totals, unknownServiceCo
                         {selected === 'articles_sans_service' && unknownServiceCodes.length > 0 && (
                             <ServiceCodes codes={unknownServiceCodes} canRelink={permissions.includes('articles.update')} canCreate={permissions.includes('services.create')} />
                         )}
+
+                        {inventoryRanges && <InventoryRanges stats={inventoryRanges} />}
 
                         {rows.data.length === 0 ? (
                             <div className="px-6 py-16 text-center">
@@ -140,7 +144,7 @@ function CheckGroup({ title, total, checks, selected }) {
                             href={route('quality.index', { check: check.key })}
                             preserveScroll
                             preserveState
-                            only={['selected', 'rows', 'unknownServiceCodes']}
+                            only={['selected', 'rows', 'unknownServiceCodes', 'inventoryRanges']}
                             className={`group flex items-center gap-3 rounded-xl px-4 py-3 transition ${active ? 'bg-brand-50 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:ring-brand-500/30' : 'hover:bg-subtle'}`}
                         >
                             <span className={`h-2 w-2 shrink-0 rounded-full ${check.count ? severities[check.severity].dot : 'bg-brand-500'}`} />
@@ -203,6 +207,54 @@ function ServiceCodes({ codes, canRelink, canCreate }) {
     );
 }
 
+function InventoryRanges({ stats }) {
+    const inconsistent = stats.reversed + stats.quantity_mismatch;
+    const items = [
+        { label: 'Lignes en plage', value: stats.lines, tone: 'text-ink' },
+        { label: 'Numeros couverts (plages coherentes)', value: stats.numbers, tone: 'text-brand-700 dark:text-brand-300' },
+        { label: 'Fin avant le debut', value: stats.reversed, tone: stats.reversed ? 'text-red-700 dark:text-red-300' : 'text-ink' },
+        { label: 'Taille ≠ quantite', value: stats.quantity_mismatch, tone: stats.quantity_mismatch ? 'text-amber-700 dark:text-amber-300' : 'text-ink' },
+    ];
+
+    return (
+        <div className="border-b border-line bg-subtle/50 px-6 py-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {items.map((item) => (
+                    <div key={item.label} className="rounded-xl border border-line bg-surface px-4 py-3">
+                        <p className="text-xs text-muted">{item.label}</p>
+                        <p className={`mt-1 text-xl font-semibold tabular-nums ${item.tone}`}>{number.format(item.value)}</p>
+                    </div>
+                ))}
+            </div>
+            <p className="mt-3 text-xs text-muted">
+                Une plage « 177857 A 177860 » couvre 4 numeros. Les {number.format(inconsistent)} plages incoherentes sont exclues du total : voir le controle « Plage d inventaire incoherente ».
+            </p>
+        </div>
+    );
+}
+
+function parseRange(value) {
+    const match = String(value || '').match(/(\d+)\s*AU?\s*(\d+)/i);
+    return match ? Number(match[2]) - Number(match[1]) + 1 : null;
+}
+
+function RangeValue({ article }) {
+    const size = parseRange(article.numero_inventaire);
+    const quantity = Number(article.quantite_entree) || Number(article.quantite_sortie);
+    const problem = size === null ? null : size < 1 ? 'fin avant le debut' : quantity && quantity !== size ? `quantite ${number.format(quantity)}` : null;
+
+    return (
+        <span className="inline-flex items-center gap-2">
+            <span className="text-ink">{article.numero_inventaire}</span>
+            {size !== null && (
+                <span className={`rounded-md px-1.5 py-0.5 font-sans text-[11px] font-semibold ${problem ? 'bg-red-50 text-red-700 ring-1 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/30' : 'bg-brand-50 text-brand-800 dark:bg-brand-500/10 dark:text-brand-200'}`} title={problem ? `Incoherent : ${problem}` : undefined}>
+                    {size < 1 ? 'inversee' : `${number.format(size)} num.`}{problem && size >= 1 ? ` ≠ ${problem}` : ''}
+                </span>
+            )}
+        </span>
+    );
+}
+
 function Cell({ children, flagged, mono = false, align = 'left' }) {
     const empty = children === null || children === undefined || children === '';
     return (
@@ -251,7 +303,9 @@ function ArticleTable({ rows, field, canEdit }) {
                                 <td className="whitespace-nowrap py-3 pl-6 pr-4 font-mono text-xs">
                                     {field === 'inventaire'
                                         ? <span className="rounded-md bg-amber-50 px-1.5 py-0.5 font-medium text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">{article.numero_inventaire || 'vide'}</span>
-                                        : <span className="text-ink">{article.numero_inventaire || '—'}</span>}
+                                        : field === 'plage'
+                                            ? <RangeValue article={article} />
+                                            : <span className="text-ink">{article.numero_inventaire || '—'}</span>}
                                 </td>
                                 <td className="max-w-xs truncate px-4 py-3 font-medium text-ink" title={article.description}>{article.description}</td>
                                 <Cell mono>{article.mouvement}</Cell>

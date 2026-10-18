@@ -8,6 +8,7 @@ use App\Models\Service;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -46,6 +47,7 @@ class DataQualityController extends Controller
             'rows' => $rows,
             'totals' => ['articles' => Article::count(), 'factures' => Facture::count()],
             'unknownServiceCodes' => $selected === 'articles_sans_service' ? $this->unknownServiceCodes() : [],
+            'inventoryRanges' => str_starts_with($selected, 'inventaire_plage') ? Arr::except($this->inventoryRanges(), 'inconsistent_ids') : null,
         ]);
     }
 
@@ -121,6 +123,22 @@ class DataQualityController extends Controller
                     ->whereRaw("REPLACE(REPLACE({$inventory}, '.', ''), ' ', '') <> ''")
                     ->where(fn (Builder $query) => $this->whereHasNoDigit($query, $inventory)),
             ],
+            'inventaire_plage' => [
+                'label' => 'N° d inventaire en plage',
+                'description' => 'Une seule ligne regroupe plusieurs numeros (ex. 177857 A 177860).',
+                'severity' => 'info',
+                'entity' => 'article',
+                'order' => $inventory,
+                'query' => fn () => Article::query()->where(fn (Builder $query) => $this->whereIsRange($query, $inventory)),
+            ],
+            'inventaire_plage_incoherente' => [
+                'label' => 'Plage d inventaire incoherente',
+                'description' => 'Fin avant le debut, ou nombre de numeros different de la quantite (faute de frappe ?).',
+                'severity' => 'warning',
+                'entity' => 'article',
+                'order' => $inventory,
+                'query' => fn () => Article::query()->whereKey($this->inventoryRanges()['inconsistent_ids']),
+            ],
             'factures_sans_date' => [
                 'label' => 'Factures sans date',
                 'description' => 'La date de facture est absente ou n a pas pu etre lue.',
@@ -183,6 +201,63 @@ class DataQualityController extends Controller
             ->havingRaw('count(*) > 1')
             ->pluck('numero_inventaire')
             ->all();
+    }
+
+    private ?array $inventoryRanges = null;
+
+    /**
+     * Range lines ("177857 A 177860"): how many inventory numbers the coherent ones cover,
+     * and the ids of ranges that are reversed or disagree with the line quantity.
+     */
+    private function inventoryRanges(): array
+    {
+        if ($this->inventoryRanges !== null) {
+            return $this->inventoryRanges;
+        }
+
+        $stats = ['lines' => 0, 'numbers' => 0, 'reversed' => 0, 'quantity_mismatch' => 0, 'inconsistent_ids' => []];
+        $rows = Article::query()
+            ->where(fn (Builder $query) => $this->whereIsRange($query, 'numero_inventaire'))
+            ->toBase()
+            ->select('id', 'numero_inventaire', 'quantite_entree', 'quantite_sortie')
+            ->cursor();
+
+        foreach ($rows as $row) {
+            $range = self::parseInventoryRange($row->numero_inventaire);
+            if (! $range) {
+                continue;
+            }
+            $stats['lines']++;
+            $quantity = (float) ($row->quantite_entree ?: $row->quantite_sortie);
+            if ($range['size'] < 1) {
+                $stats['reversed']++;
+            } elseif ($quantity > 0 && $quantity != $range['size']) {
+                $stats['quantity_mismatch']++;
+            } else {
+                $stats['numbers'] += $range['size'];
+                continue;
+            }
+            $stats['inconsistent_ids'][] = $row->id;
+        }
+
+        return $this->inventoryRanges = $stats;
+    }
+
+    /** Parses "177857 A 177860" into its bounds; size is how many numbers it covers (< 1 when reversed). */
+    private static function parseInventoryRange(?string $value): ?array
+    {
+        if (! preg_match('/(\d+)\s*AU?\s*(\d+)/i', (string) $value, $matches)) {
+            return null;
+        }
+
+        return ['start' => (int) $matches[1], 'end' => (int) $matches[2], 'size' => (int) $matches[2] - (int) $matches[1] + 1];
+    }
+
+    private function whereIsRange(Builder $query, string $column): void
+    {
+        DB::getDriverName() === 'sqlite'
+            ? $query->whereRaw("{$column} GLOB '*[0-9]*[Aa]*[0-9]*'")
+            : $query->whereRaw("{$column} REGEXP '[0-9] *[Aa][Uu]? *[0-9]'");
     }
 
     private function serviceKey(?string $code): int|string|null

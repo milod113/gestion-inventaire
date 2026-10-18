@@ -47,6 +47,8 @@ class DataQualityTest extends TestCase
                     'inventaire_doublon' => 2,
                     'inventaire_manquant' => 1,
                     'inventaire_non_numerique' => 1,
+                    'inventaire_plage' => 1,
+                    'inventaire_plage_incoherente' => 1,
                     'factures_sans_date' => 1,
                     'factures_montant_nul' => 1,
                     'factures_sans_fournisseur' => 0,
@@ -55,6 +57,22 @@ class DataQualityTest extends TestCase
                 ->where('selected', 'articles_sans_service')
                 ->where('unknownServiceCodes.0.code', '999')
                 ->where('unknownServiceCodes.0.linkable', false));
+    }
+
+    public function test_it_counts_inventory_numbers_covered_by_ranges(): void
+    {
+        $article = ['description' => 'LIT', 'mouvement' => 'E'];
+        Article::create([...$article, 'numero_inventaire' => '177857 A 177860', 'quantite_entree' => 4]); // 4 numbers
+        Article::create([...$article, 'numero_inventaire' => '11600A11601', 'quantite_entree' => null]);  // 2 numbers
+        $mismatch = Article::create([...$article, 'numero_inventaire' => '93364 A 993400', 'quantite_entree' => 37]);
+        $reversed = Article::create([...$article, 'numero_inventaire' => '63468 A 63467', 'quantite_entree' => 2]);
+        Article::create([...$article, 'numero_inventaire' => '500', 'quantite_entree' => 1]);
+
+        $this->actingAs($this->user())
+            ->get(route('quality.index', ['check' => 'inventaire_plage_incoherente']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('inventoryRanges', ['lines' => 4, 'numbers' => 6, 'reversed' => 1, 'quantity_mismatch' => 1])
+                ->where('rows.data', fn ($rows) => collect($rows)->pluck('id')->sort()->values()->all() === [$mismatch->id, $reversed->id]));
     }
 
     public function test_relinking_attaches_orphan_articles_to_newly_created_services(): void
