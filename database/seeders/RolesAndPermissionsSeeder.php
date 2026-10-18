@@ -18,7 +18,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'dashboard.view',
             'services.view', 'services.create', 'services.update', 'services.delete',
             'articles.view', 'articles.create', 'articles.update', 'articles.delete',
-            'factures.view', 'factures.create', 'factures.update', 'factures.delete',
+            'factures.view', 'factures.create', 'factures.update', 'factures.delete', 'factures.correct_import',
             'fournisseurs.view', 'fournisseurs.create', 'fournisseurs.update', 'fournisseurs.delete',
             'imports.view', 'imports.run',
             'backups.run',
@@ -41,6 +41,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'fournisseurs.view', 'fournisseurs.create', 'fournisseurs.update',
             'imports.view', 'imports.run',
             'backups.run',
+        ]);
+
+        $accountant = Role::findOrCreate('Comptable', 'web');
+        $accountant->syncPermissions([
+            'dashboard.view',
+            'services.view', 'articles.view', 'fournisseurs.view',
+            'factures.view', 'factures.create', 'factures.update', 'factures.correct_import',
         ]);
 
         $viewer = Role::findOrCreate('Consultation', 'web');

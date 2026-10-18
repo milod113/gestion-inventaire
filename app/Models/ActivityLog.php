@@ -13,7 +13,7 @@ class ActivityLog extends Model
 
     protected $fillable = [
         'user_id', 'user_name', 'event', 'subject_type', 'subject_id',
-        'label', 'old_values', 'new_values', 'ip_address',
+        'label', 'old_values', 'new_values', 'motif', 'ip_address',
     ];
 
     protected function casts(): array
@@ -26,7 +26,7 @@ class ActivityLog extends Model
         return $this->belongsTo(User::class);
     }
 
-    public static function record(string $event, ?Model $subject = null, ?array $old = null, ?array $new = null, ?Authenticatable $user = null, ?string $label = null): self
+    public static function record(string $event, ?Model $subject = null, ?array $old = null, ?array $new = null, ?Authenticatable $user = null, ?string $label = null, ?string $motif = null): self
     {
         $user ??= Auth::user();
 
@@ -39,6 +39,7 @@ class ActivityLog extends Model
             'label' => $label ?? ($subject && method_exists($subject, 'auditLabel') ? $subject->auditLabel() : null),
             'old_values' => $old ?: null,
             'new_values' => $new ?: null,
+            'motif' => $motif,
             'ip_address' => request()?->ip(),
         ]);
     }

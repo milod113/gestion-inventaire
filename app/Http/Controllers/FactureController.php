@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Facture;
 use App\Models\Service;
 use App\Services\ServiceReferenceNormalizer;
@@ -69,7 +70,7 @@ class FactureController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Factures/Create', ['services' => $this->services()]);
+        return Inertia::render('Factures/Create', ['services' => Facture::SERVICES]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -83,35 +84,67 @@ class FactureController extends Controller
 
     public function show(Facture $facture): Response
     {
+        $historique = ActivityLog::query()
+            ->where('subject_type', 'Facture')
+            ->where('subject_id', $facture->id)
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get(['id', 'user_name', 'event', 'old_values', 'new_values', 'motif', 'created_at']);
+
         return Inertia::render('Factures/Show', [
             'facture' => $facture->load('service:id,code,name', 'creator:id,name', 'editor:id,name'),
             'details' => $facture->details()->with('article')->orderBy('id')->paginate(50),
+            'historique' => $historique,
+            'serviceNames' => $this->serviceNames($facture, $historique),
         ]);
     }
 
-    public function edit(Facture $facture): Response|RedirectResponse
+    public function edit(Request $request, Facture $facture): Response|RedirectResponse
     {
-        if ($facture->isImported()) {
+        if ($facture->isImported() && ! $request->user()->can('factures.correct_import')) {
             return $this->importedLocked();
         }
 
         return Inertia::render('Factures/Edit', [
             'facture' => $facture,
-            'services' => $this->services(),
+            'services' => Facture::SERVICES,
+            'motifs' => Facture::MOTIFS_CORRECTION,
         ]);
     }
 
     public function update(Request $request, Facture $facture): RedirectResponse
     {
-        if ($facture->isImported()) {
+        if (! $facture->isImported()) {
+            $data = $this->validatedData($request, $facture);
+            $data['service_reference_normalisee'] = ServiceReferenceNormalizer::normalize($data['service_reference'] ?? null);
+            $facture->update($data);
+
+            return redirect()->route('factures.index')->with('success', 'Facture modifiee avec succes.');
+        }
+
+        if (! $request->user()->can('factures.correct_import')) {
             return $this->importedLocked();
         }
 
-        $data = $this->validatedData($request);
-        $data['service_reference_normalisee'] = ServiceReferenceNormalizer::normalize($data['service_reference'] ?? null);
-        $facture->update($data);
+        $data = $this->validatedData($request, $facture);
+        $correction = $request->validate([
+            'motif_correction' => ['required', Rule::in(array_keys(Facture::MOTIFS_CORRECTION))],
+            'motif_precision' => ['nullable', 'required_if:motif_correction,autre', 'string', 'max:500'],
+        ], [
+            'motif_correction.required' => 'Le motif de la correction est obligatoire.',
+            'motif_precision.required_if' => 'Precisez le motif de la correction.',
+        ]);
+        $motif = Facture::MOTIFS_CORRECTION[$correction['motif_correction']];
+        if (filled($correction['motif_precision'] ?? null)) {
+            $motif .= ' : '.trim($correction['motif_precision']);
+        }
 
-        return redirect()->route('factures.index')->with('success', 'Facture modifiee avec succes.');
+        $data['service_reference_normalisee'] = ServiceReferenceNormalizer::normalize($data['service_reference'] ?? null);
+        if (! $facture->corriger($data, $motif)) {
+            return back()->with('error', 'Aucune valeur n a ete modifiee : la correction n a pas ete enregistree.');
+        }
+
+        return redirect()->route('factures.show', $facture)->with('success', 'Correction enregistree. Les valeurs d origine sont conservees.');
     }
 
     public function destroy(Facture $facture): RedirectResponse
@@ -134,17 +167,29 @@ class FactureController extends Controller
         return redirect()->route('factures.index')->with('error', 'Une facture importee est en lecture seule.');
     }
 
-    private function services()
+    /** Libelles des services cites dans l'historique et les valeurs d'origine (id => "code - nom"). */
+    private function serviceNames(Facture $facture, $historique): array
     {
-        return Service::query()->orderBy('code')->get(['id', 'code', 'name']);
+        $ids = collect([$facture->service_id, $facture->valeurs_origine['service_id'] ?? null])
+            ->merge($historique->flatMap(fn (ActivityLog $log) => [$log->old_values['service_id'] ?? null, $log->new_values['service_id'] ?? null]))
+            ->filter()
+            ->unique();
+
+        return Service::query()->whereIn('id', $ids)->get(['id', 'code', 'name'])
+            ->mapWithKeys(fn (Service $service) => [$service->id => "{$service->code} - {$service->name}"])
+            ->all();
     }
 
-    private function validatedData(Request $request): array
+    private function validatedData(Request $request, ?Facture $facture = null): array
     {
+        // Seuls les services de Facture::SERVICES sont proposes ; la reference importee
+        // existante d'une facture (ex. "ECONOMET") reste acceptee tant qu'elle n'est pas changee.
+        $references = array_filter([...array_keys(Facture::SERVICES), $facture?->service_reference]);
+
         return $request->validate([
             'service_id' => ['nullable', 'integer', Rule::exists('services', 'id')],
             'n_bon' => ['nullable', 'string', 'max:255'],
-            'service_reference' => ['nullable', 'string', 'max:255'],
+            'service_reference' => ['nullable', 'string', 'max:255', Rule::in($references)],
             'imputation' => ['nullable', 'string', 'max:255'],
             'n_journal' => ['nullable', 'string', 'max:255'],
             'numero_facture' => ['nullable', 'string', 'max:255'],

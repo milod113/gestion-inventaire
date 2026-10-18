@@ -28,18 +28,25 @@ class Article extends Model
         'quantite_sortie',
         'numero_bon',
         'observation',
+        'observation_mouvement',
         'numero_inventaire',
         'source_row',
         'source_hash',
     ];
+
+    protected static function booted(): void
+    {
+        // Supprime le lien facture via le modele (et non la cascade SQL) pour qu'il soit journalise.
+        static::deleting(fn (self $article) => $article->detailFacture?->delete());
+    }
 
     protected function casts(): array
     {
         return [
             'date_mouvement' => 'date',
             'prix_unitaire' => 'decimal:2',
-            'quantite_entree' => 'decimal:3',
-            'quantite_sortie' => 'decimal:3',
+            'quantite_entree' => 'integer',
+            'quantite_sortie' => 'integer',
         ];
     }
 

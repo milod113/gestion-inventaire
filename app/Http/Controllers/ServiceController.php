@@ -53,8 +53,8 @@ class ServiceController extends Controller
             'service' => $service,
             'statistics' => [
                 'articles_count' => (clone $articles)->count(),
-                'entries' => (float) (clone $articles)->sum('quantite_entree'),
-                'exits' => (float) (clone $articles)->sum('quantite_sortie'),
+                'entries' => (int) (clone $articles)->sum('quantite_entree'),
+                'exits' => (int) (clone $articles)->sum('quantite_sortie'),
                 'factures_count' => (clone $factures)->count(),
                 'factures_amount' => (float) (clone $factures)->sum('montant'),
             ],

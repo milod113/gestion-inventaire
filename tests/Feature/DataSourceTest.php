@@ -48,15 +48,23 @@ class DataSourceTest extends TestCase
         $this->get(route('factures.index'))->assertInertia(fn (Assert $page) => $page->has('factures.data', 2));
     }
 
-    public function test_imported_invoices_are_read_only(): void
+    public function test_imported_invoices_are_read_only_without_the_correction_permission(): void
     {
         $facture = Facture::create(['numero_facture' => 'OLD', 'source' => 'import']);
+        $this->actingAs(User::factory()->create()->assignRole('Gestionnaire'));
 
         $this->get(route('factures.edit', $facture))->assertRedirect(route('factures.index'));
         $this->put(route('factures.update', $facture), ['numero_facture' => 'CHANGED'])->assertRedirect(route('factures.index'));
-        $this->delete(route('factures.destroy', $facture))->assertRedirect(route('factures.index'));
 
         $this->assertSame('OLD', $facture->fresh()->numero_facture);
+    }
+
+    public function test_imported_invoices_can_never_be_deleted(): void
+    {
+        $facture = Facture::create(['numero_facture' => 'OLD', 'source' => 'import']);
+
+        $this->delete(route('factures.destroy', $facture))->assertRedirect(route('factures.index'));
+        $this->assertDatabaseHas('factures', ['id' => $facture->id]);
     }
 
     public function test_manually_entered_invoices_stay_editable(): void

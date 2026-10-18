@@ -263,6 +263,15 @@ Artisan::command('factures:import {path?}', function (?string $path = null) {
         return 1;
     }
 
+    // Ne pas ecraser les factures corrigees manuellement : leurs corrections priment sur le fichier.
+    $corrigees = DB::table('factures')->whereNotNull('corrigee_at')->pluck('source_row')->filter()->flip();
+    $ignorees = count($factures);
+    $factures = array_values(array_filter($factures, fn (array $facture) => ! isset($corrigees[$facture['source_row']])));
+    $ignorees -= count($factures);
+    if ($ignorees > 0) {
+        $this->warn($ignorees.' facture(s) corrigee(s) ignoree(s) pour conserver les corrections.');
+    }
+
     DB::table('factures')->upsert(
         $factures,
         ['source_row'],

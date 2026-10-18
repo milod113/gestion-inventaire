@@ -28,6 +28,7 @@ export default function Form({ article = null, services, factures = [], factureI
         numero_inventaire: article?.numero_inventaire || '',
         service_code_source: article?.service_code_source || '',
         observation: article?.observation || '',
+        observation_mouvement: article?.observation_mouvement || '',
     });
     const [customMovement, setCustomMovement] = useState(Boolean(article?.mouvement) && !['E', 'S'].includes(article.mouvement));
     const selectedService = services.find((service) => String(service.id) === String(data.service_id));
@@ -102,7 +103,7 @@ export default function Form({ article = null, services, factures = [], factureI
                     </Field>
                 </Section>
 
-                <Section number="2" title="Mouvement" description="Type, date et quantites du mouvement.">
+                <Section number="2" title="Mouvement" description="Type, date, quantites et observation du mouvement.">
                     <Field label="Type de mouvement" name="mouvement" error={errors.mouvement} wide>
                         <div className="flex flex-wrap items-center gap-2">
                             <div className="inline-flex rounded-xl border border-line bg-subtle p-1" role="radiogroup" aria-label="Type de mouvement">
@@ -133,6 +134,9 @@ export default function Form({ article = null, services, factures = [], factureI
                     <Field label="Quantite sortie" name="quantite_sortie" error={errors.quantite_sortie}>
                         <QuantityInput {...text('quantite_sortie')} className={inputClass(errors.quantite_sortie)} />
                     </Field>
+                    <Field label="Observation du mouvement" name="observation_mouvement" error={errors.observation_mouvement} hint="Motif ou details du mouvement" wide>
+                        <textarea {...text('observation_mouvement')} rows="3" placeholder="ex. Reforme - materiel hors d'usage" className={`${inputClass(errors.observation_mouvement)} resize-y`} />
+                    </Field>
                 </Section>
 
                 <Section number="3" title="Affectation" description="Service concerne et remarques.">
@@ -154,7 +158,7 @@ export default function Form({ article = null, services, factures = [], factureI
 function QuantityInput({ className, ...props }) {
     return (
         <div className="relative">
-            <input {...props} type="number" min="0" step="0.001" inputMode="decimal" placeholder="0" className={`${className} pr-16 tabular-nums`} />
+            <input {...props} type="number" min="0" step="1" inputMode="numeric" placeholder="0" className={`${className} pr-16 tabular-nums`} />
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-xs font-semibold text-muted">unite(s)</span>
         </div>
     );

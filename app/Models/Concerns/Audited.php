@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Auth;
  */
 trait Audited
 {
+    /** Motif joint a la prochaine entree du journal (ex. motif de correction). */
+    public ?string $auditMotif = null;
+
     public static function bootAudited(): void
     {
         static::creating(function ($model) {
@@ -35,7 +38,8 @@ trait Audited
             if ($new === []) {
                 return;
             }
-            ActivityLog::record('updated', $model, array_intersect_key($model->getOriginal(), $new), $new);
+            ActivityLog::record('updated', $model, array_intersect_key($model->getOriginal(), $new), $new, motif: $model->auditMotif);
+            $model->auditMotif = null;
         });
 
         static::deleted(fn ($model) => ActivityLog::record('deleted', $model, $model->auditValues($model->getAttributes())));
@@ -58,7 +62,7 @@ trait Audited
 
     private function auditValues(array $values): array
     {
-        $ignored = ['created_at', 'updated_at', 'created_by', 'updated_by', 'source_hash'];
+        $ignored = ['created_at', 'updated_at', 'created_by', 'updated_by', 'source_hash', ...($this->auditExcept ?? [])];
 
         return array_filter(
             array_diff_key($values, array_flip($ignored)),

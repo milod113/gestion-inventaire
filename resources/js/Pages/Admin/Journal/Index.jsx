@@ -9,6 +9,8 @@ const events = {
     login: ['Connexion', 'bg-slate-50 text-slate-700 border-slate-200'],
     logout: ['Déconnexion', 'bg-slate-50 text-slate-700 border-slate-200'],
     import: ['Import', 'bg-amber-50 text-amber-800 border-amber-200'],
+    article_added: ['Article ajouté', 'bg-emerald-50 text-emerald-800 border-emerald-200'],
+    article_removed: ['Article retiré', 'bg-red-50 text-red-800 border-red-200'],
 };
 const subjects = { Article: 'Article', Facture: 'Facture', Fournisseur: 'Fournisseur', Service: 'Service' };
 const inputClass = 'mt-2 block w-full rounded-xl border-[#d5e1d6] bg-[#fbfdfb] px-3 py-2.5 text-sm text-[#294337] focus:border-[#2f7654] focus:ring-[#2f7654]';
@@ -65,7 +67,7 @@ function Row({ log }) {
             <td className="px-6 py-4 text-sm font-semibold text-[#243d30]">{log.user_name || 'Système'}<p className="mt-0.5 text-xs font-normal text-[#718177]">{log.ip_address}</p></td>
             <td className="px-6 py-4"><span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold ${tone}`}>{label}</span></td>
             <td className="px-6 py-4 text-sm text-[#243d30]">{log.subject_type && <span className="text-xs font-bold uppercase tracking-wide text-[#819087]">{log.subject_type} </span>}{log.label || '-'}</td>
-            <td className="px-6 py-4 text-sm text-[#4e6457]">{fields.length === 0 ? '-' : (
+            <td className="px-6 py-4 text-sm text-[#4e6457]">{log.motif && <p className="mb-1 text-xs text-sky-900"><span className="font-bold">Motif : </span>{log.motif}</p>}{fields.length === 0 ? (log.motif ? null : '-') : (
                 <details><summary className="cursor-pointer font-semibold text-[#36558a]">{fields.length} champ(s)</summary>
                     <ul className="mt-2 space-y-1 text-xs">{fields.map((field) => <li key={field}><span className="font-bold">{field}</span> : {log.event !== 'created' && log.event !== 'deleted' && <><span className="text-red-700 line-through">{String(log.old_values?.[field] ?? '∅')}</span> → </>}<span className={log.event === 'deleted' ? 'text-red-700' : 'text-emerald-800'}>{String((log.event === 'deleted' ? log.old_values : log.new_values)?.[field] ?? '∅')}</span></li>)}</ul>
                 </details>

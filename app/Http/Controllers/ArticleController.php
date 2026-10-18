@@ -276,7 +276,7 @@ class ArticleController extends Controller
             $article->update($data);
             if ($changeLink) {
                 if ($factureId === null) {
-                    $article->detailFacture()->delete();
+                    $article->detailFacture?->delete();
                 } else {
                     $article->detailFacture()->updateOrCreate([], ['facture_id' => $factureId]);
                 }
@@ -337,10 +337,11 @@ class ArticleController extends Controller
             'mouvement' => ['nullable', 'string', 'max:10'],
             'date_mouvement' => ['nullable', 'date'],
             'date_source' => ['nullable', 'string', 'max:255'],
-            'quantite_entree' => ['nullable', 'numeric', 'min:0'],
-            'quantite_sortie' => ['nullable', 'numeric', 'min:0'],
+            'quantite_entree' => ['nullable', 'integer', 'min:0'],
+            'quantite_sortie' => ['nullable', 'integer', 'min:0'],
             'numero_bon' => ['nullable', 'string', 'max:255'],
             'observation' => ['nullable', 'string'],
+            'observation_mouvement' => ['nullable', 'string'],
             'numero_inventaire' => ['nullable', 'string', 'max:255'],
         ]);
     }
