@@ -59,6 +59,7 @@ class InvoiceCorrectionTest extends TestCase
     public function test_correction_keeps_the_first_imported_value_and_logs_the_motif(): void
     {
         $facture = $this->importedInvoice();
+        \App\Models\Fournisseur::create(['code' => 'PR.900', 'appellation' => 'Nouveau fournisseur']);
         $this->actingAs(User::factory()->create(['name' => 'Agent CF'])->assignRole('Comptable'));
 
         $this->put(route('factures.update', $facture), $this->payload($facture, ['montant' => 1200, 'motif_correction' => 'rejet_cf']))

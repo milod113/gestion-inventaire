@@ -46,7 +46,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $accountant = Role::findOrCreate('Comptable', 'web');
         $accountant->syncPermissions([
             'dashboard.view',
-            'services.view', 'articles.view', 'fournisseurs.view',
+            'services.view', 'articles.view', 'fournisseurs.view', 'fournisseurs.create',
             'factures.view', 'factures.create', 'factures.update', 'factures.correct_import',
         ]);
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\Facture;
+use App\Models\Fournisseur;
 use App\Models\Service;
 use App\Services\ServiceReferenceNormalizer;
 use Illuminate\Http\RedirectResponse;
@@ -92,7 +93,7 @@ class FactureController extends Controller
             ->get(['id', 'user_name', 'event', 'old_values', 'new_values', 'motif', 'created_at']);
 
         return Inertia::render('Factures/Show', [
-            'facture' => $facture->load('service:id,code,name', 'creator:id,name', 'editor:id,name'),
+            'facture' => $facture->load('service:id,code,name', 'creator:id,name', 'editor:id,name', 'fournisseur:id,code,appellation,telephone,adresse'),
             'details' => $facture->details()->with('article')->orderBy('id')->paginate(50),
             'historique' => $historique,
             'serviceNames' => $this->serviceNames($facture, $historique),
@@ -106,7 +107,7 @@ class FactureController extends Controller
         }
 
         return Inertia::render('Factures/Edit', [
-            'facture' => $facture,
+            'facture' => $facture->load('fournisseur:id,code,appellation,telephone,adresse'),
             'services' => Facture::SERVICES,
             'motifs' => Facture::MOTIFS_CORRECTION,
         ]);
@@ -195,7 +196,12 @@ class FactureController extends Controller
             'numero_facture' => ['nullable', 'string', 'max:255'],
             'date_facture' => ['nullable', 'string', 'max:255'],
             'montant' => ['nullable', 'numeric', 'min:0'],
-            'code_fournisseur' => ['nullable', 'string', 'max:255'],
+            // Le fournisseur doit exister dans la table ; un ancien code importe sans fiche reste accepte tant qu'il n'est pas change.
+            'code_fournisseur' => ['nullable', 'string', 'max:255', function (string $attribute, mixed $value, \Closure $fail) use ($facture) {
+                if ($value !== $facture?->code_fournisseur && ! Fournisseur::where('code', $value)->exists()) {
+                    $fail('Ce fournisseur n existe pas : selectionnez-le dans la liste ou creez-le.');
+                }
+            }],
             'n_inventaire' => ['nullable', 'string', 'max:255'],
             'cfac' => ['nullable', 'string', 'max:255'],
             'n_mandat' => ['nullable', 'string', 'max:255'],

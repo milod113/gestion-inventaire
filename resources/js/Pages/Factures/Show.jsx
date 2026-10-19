@@ -83,7 +83,7 @@ export default function Show({ facture, details, historique = [], serviceNames =
                             <div className="grid gap-x-10 gap-y-6 p-6 sm:grid-cols-2 sm:p-8">
                                 <DataLine label="Numero de bon" value={facture.n_bon} />
                                 <DataLine label="Numero journal" value={facture.n_journal} />
-                                <DataLine label="Code fournisseur" value={facture.code_fournisseur} />
+                                <DataLine label="Fournisseur" value={facture.fournisseur ? <>{facture.fournisseur.code} · {can('fournisseurs.view') ? <Link href={route('fournisseurs.show', facture.fournisseur.id)} className="text-brand-600 hover:underline">{facture.fournisseur.appellation}</Link> : facture.fournisseur.appellation}</> : facture.code_fournisseur} />
                                 <DataLine label="Numero inventaire" value={facture.n_inventaire} />
                                 <DataLine label="CFAC" value={facture.cfac} />
                                 <DataLine label="Numero mandat" value={facture.n_mandat} />

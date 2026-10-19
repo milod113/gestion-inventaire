@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\FactureController;
+use App\Http\Controllers\FactureFournisseurController;
 use App\Http\Controllers\FournisseurController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ImportController;
@@ -57,6 +58,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/factures/{facture}/details', [ArticleController::class, 'storeForFacture'])
         ->middleware(['permission:factures.view', 'permission:articles.view', 'permission:articles.create'])
         ->name('factures.details.store');
+
+    // Declarees avant la ressource "factures" pour ne pas etre capturees par /factures/{facture}.
+    Route::get('/factures/fournisseurs/recherche', [FactureFournisseurController::class, 'search'])
+        ->middleware('permission:factures.view')
+        ->name('factures.fournisseurs.search');
+    Route::post('/factures/fournisseurs', [FactureFournisseurController::class, 'store'])
+        ->middleware(['permission:factures.view', 'permission:fournisseurs.create'])
+        ->name('factures.fournisseurs.store');
 
     Route::resource('factures', FactureController::class)
         ->middleware('permission:factures.view')

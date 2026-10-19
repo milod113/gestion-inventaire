@@ -111,6 +111,12 @@ class Facture extends Model
         return $this->belongsTo(Service::class);
     }
 
+    /** Fournisseur rattache par son code (les factures importees n'ont pas toutes une fiche fournisseur). */
+    public function fournisseur(): BelongsTo
+    {
+        return $this->belongsTo(Fournisseur::class, 'code_fournisseur', 'code');
+    }
+
     public function details(): HasMany
     {
         return $this->hasMany(DetailFacture::class);
