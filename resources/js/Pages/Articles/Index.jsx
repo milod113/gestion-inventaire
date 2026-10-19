@@ -1,6 +1,5 @@
 import LabelPrintControls from '@/Components/LabelPrintControls';
 import PageHeader, { HeaderStat, PlusIcon } from '@/Components/PageHeader';
-import SourceBadge, { SourceSelect } from '@/Components/SourceBadge';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -10,7 +9,7 @@ const checkboxClass = 'h-4 w-4 rounded border-line text-brand-700 focus:ring-bra
 
 export default function Index({ articles, summary, services, filters }) {
     const { flash = {} } = usePage().props;
-    const { data, setData, get, processing } = useForm({ search: filters.search || '', service_code: filters.service_code || '', source: filters.source || '' });
+    const { data, setData, get, processing } = useForm({ search: filters.search || '', service_code: filters.service_code || '' });
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selected, setSelected] = useState([]);
@@ -18,7 +17,7 @@ export default function Index({ articles, summary, services, filters }) {
     const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.includes(id));
     const toggle = (id) => setSelected((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
     const toggleAll = () => setSelected(allSelected ? [] : selectableIds);
-    const hasFilters = Boolean(filters.search || filters.service_code || filters.source);
+    const hasFilters = Boolean(filters.search || filters.service_code);
 
     useEffect(() => {
         const term = data.search.trim();
@@ -38,7 +37,7 @@ export default function Index({ articles, summary, services, filters }) {
         setData('search', article.search_value);
         setShowSuggestions(false);
         setSuggestions([]);
-        router.get(route('articles.index'), { search: article.search_value, service_code: data.service_code, source: data.source }, { preserveState: true, replace: true });
+        router.get(route('articles.index'), { search: article.search_value, service_code: data.service_code }, { preserveState: true, replace: true });
     };
     const destroy = (article) => { if (window.confirm(`Supprimer l article "${article.description}" ?`)) router.delete(route('articles.destroy', article.id)); };
 
@@ -48,10 +47,9 @@ export default function Index({ articles, summary, services, filters }) {
             {flash.success && <Alert tone="success">{flash.success}</Alert>}
             {flash.error && <Alert tone="error">{flash.error}</Alert>}
 
-            <section className="grid gap-4 sm:grid-cols-3">
+            <section className="grid gap-4 sm:grid-cols-2">
                 <Metric label={hasFilters ? 'Articles filtrés' : 'Articles'} value={summary.total} tone="green" />
                 <Metric label="Avec numéro d inventaire" value={summary.with_inventory} hint={percent(summary.with_inventory, summary.total)} tone="blue" />
-                <Metric label="Importés" value={summary.imported} hint={`${formatNumber(summary.total - summary.imported)} saisis`} tone="gold" />
             </section>
 
             <section className="rounded-3xl border border-line bg-surface p-4 shadow-sm sm:p-5">
@@ -67,7 +65,6 @@ export default function Index({ articles, summary, services, filters }) {
                         </div>}
                     </div>
                     <select value={data.service_code} onChange={(event) => setData('service_code', event.target.value)} className={`form-select px-3 ${fieldClass}`}><option value="">Tous les services</option>{services.map((service) => <option key={service.code} value={service.code}>{service.code} - {service.name}</option>)}</select>
-                    <SourceSelect value={data.source} onChange={(value) => setData('source', value)} className={`form-select px-3 ${fieldClass}`} />
                     <button type="submit" disabled={processing} className="rounded-xl bg-brand-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-800 disabled:opacity-60 dark:bg-brand-600 dark:hover:bg-brand-700">Rechercher</button>
                     <Link href={route('articles.index')} className="rounded-xl px-3 py-3 text-center text-sm font-semibold text-muted transition hover:bg-subtle">Effacer</Link>
                 </form>
@@ -96,7 +93,7 @@ export default function Index({ articles, summary, services, filters }) {
                             {articles.data.map((article) => <tr key={article.id} className={`transition hover:bg-subtle ${selected.includes(article.id) ? 'bg-brand-50/60 dark:bg-brand-900/30' : ''}`}>
                                 <td className="py-4 pl-6"><input type="checkbox" checked={selected.includes(article.id)} onChange={() => toggle(article.id)} disabled={!article.numero_inventaire} title={article.numero_inventaire ? 'Sélectionner pour les étiquettes' : 'Pas de numéro d inventaire'} className={checkboxClass} /></td>
                                 <td className="max-w-md px-6 py-4">
-                                    <Link href={route('articles.show', article.id)} className="text-sm font-bold text-ink hover:text-brand-700 dark:hover:text-brand-300">{article.description}</Link><SourceBadge source={article.source} />
+                                    <Link href={route('articles.show', article.id)} className="text-sm font-bold text-ink hover:text-brand-700 dark:hover:text-brand-300">{article.description}</Link>
                                     <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted"><MovementBadge value={article.mouvement} />{article.date_mouvement && <span>{formatDate(article.date_mouvement)}</span>}{article.numero_bon && <span>· Bon {article.numero_bon}</span>}</div>
                                 </td>
                                 <td className="px-6 py-4 text-sm">{article.service ? <><span className="font-bold text-ink">{article.service.code}</span><span className="block text-xs text-muted">{article.service.name}</span></> : <span className="text-muted">{article.service_code_source || '—'}</span>}</td>

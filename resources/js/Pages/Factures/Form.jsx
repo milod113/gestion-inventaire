@@ -18,14 +18,14 @@ export default function Form({ facture = null, services = {}, motifs = {} }) {
     // Tant que la reference importee n'est pas changee, on la rattache a son service via sa forme normalisee (ex. "ECONOMET" -> ECONOMAT).
     const selectedReference = facture && data.service_reference === (facture.service_reference || '') ? facture.service_reference_normalisee : data.service_reference;
     const selectedService = services[selectedReference] || (data.service_reference || null);
-    const title = isCorrection ? 'Corriger une facture importee' : isEditing ? 'Modifier une facture' : 'Nouvelle facture';
+    const title = isCorrection ? 'Corriger une facture' : isEditing ? 'Modifier une facture' : 'Nouvelle facture';
     const origine = facture?.valeurs_origine || {};
     // Rappelle la valeur importee d'origine sous chaque champ deja corrige.
     const hint = (name, fallback) => {
         if (!(name in origine)) return fallback;
         const value = origine[name];
         const shown = value === null || value === '' ? 'vide' : value;
-        return `Valeur importee d'origine : ${shown}`;
+        return `Valeur d'origine : ${shown}`;
     };
 
     const submit = (event) => {
@@ -42,7 +42,7 @@ export default function Form({ facture = null, services = {}, motifs = {} }) {
                 <PageHeader
                     eyebrow="Comptabilite · Factures"
                     title={title}
-                    description={isCorrection ? `Facture N° ${facture.numero_facture || facture.id} · les valeurs importees d'origine sont conservees` : isEditing ? `Facture N° ${facture.numero_facture || facture.id}` : 'Renseignez les informations de la facture puis enregistrez.'}
+                    description={isCorrection ? `Facture N° ${facture.numero_facture || facture.id} · les valeurs d'origine sont conservees` : isEditing ? `Facture N° ${facture.numero_facture || facture.id}` : 'Renseignez les informations de la facture puis enregistrez.'}
                     actions={<Link href={route('factures.index')} className="btn-secondary"><BackIcon />Retour a la liste</Link>}
                 />
             }
@@ -88,7 +88,7 @@ export default function Form({ facture = null, services = {}, motifs = {} }) {
                 </Section>
 
                 <Section number="2" title="Affectation" description="Service beneficiaire et imputation budgetaire.">
-                    <Field label="Service" name="service_reference" error={errors.service_reference} hint={hint('service_reference', selectedReference && !services[selectedReference] ? `Reference importee : ${data.service_reference}` : undefined)} wide>
+                    <Field label="Service" name="service_reference" error={errors.service_reference} hint={hint('service_reference', selectedReference && !services[selectedReference] ? `Reference actuelle : ${data.service_reference}` : undefined)} wide>
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Service">
                             {Object.entries(services).map(([value, label]) => {
                                 const active = selectedReference === value;

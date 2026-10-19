@@ -27,7 +27,7 @@ export default function Show({ facture, details, historique = [], serviceNames =
                             <div className="absolute -left-20 -top-28 h-72 w-72 rounded-full bg-[#2d7454]/60 blur-3xl" />
                             <div className="absolute -bottom-28 right-1/4 h-56 w-56 rounded-full border-[28px] border-[#e5ad45]/15" />
                             <div className="relative">
-                                <div className="flex flex-wrap items-center gap-3"><span className="h-2.5 w-2.5 rounded-full bg-[#e5ad45]" /><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-100/65">{facture.source === 'import' ? 'Facture importee' : 'Facture saisie'}</p>{facture.corrigee_at && <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-sky-900">Corrigée le {formatDateTime(facture.corrigee_at)}</span>}</div>
+                                <div className="flex flex-wrap items-center gap-3"><span className="h-2.5 w-2.5 rounded-full bg-[#e5ad45]" /><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-100/65">Facture</p>{facture.corrigee_at && <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-sky-900">Corrigée le {formatDateTime(facture.corrigee_at)}</span>}</div>
                                 <h1 className="mt-5 break-words text-4xl font-bold tracking-tight sm:text-5xl">{facture.numero_facture || 'Sans numero'}</h1>
                                 <div className="mt-5 flex flex-wrap gap-3 text-sm"><Pill label="N. bon" value={facture.n_bon} /><Pill label="Date facture" value={formatDate(facture.date_facture)} /></div>
                             </div>
@@ -107,7 +107,7 @@ export default function Show({ facture, details, historique = [], serviceNames =
 
 function Header({ facture, canAddDetail, canCorrect }) {
     const editButton = 'rounded-xl bg-[#e5ad45] px-4 py-2.5 text-sm font-bold text-[#173126] shadow-sm transition hover:bg-[#f3c361]';
-    return <div className="flex items-center justify-between"><div><p className="text-sm font-medium text-[#718177]">Comptabilite / Factures</p><p className="mt-1 text-xl font-bold text-[#173126]">Consultation de facture</p></div><div className="flex flex-wrap gap-3">{canAddDetail && <Link href={route('factures.details.create', facture.id)} className="btn-primary">Ajouter un detail</Link>}<Link href={route('factures.index')} className="rounded-xl border border-[#d5e1d6] bg-white px-4 py-2.5 text-sm font-semibold text-[#365246] shadow-sm transition hover:bg-[#f2f7f2]">Retour</Link>{facture.source !== 'import' ? <Link href={route('factures.edit', facture.id)} className={editButton}>Modifier</Link> : canCorrect ? <Link href={route('factures.edit', facture.id)} className={editButton}>Corriger</Link> : <span className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-800">Importée · lecture seule</span>}</div></div>;
+    return <div className="flex items-center justify-between"><div><p className="text-sm font-medium text-[#718177]">Comptabilite / Factures</p><p className="mt-1 text-xl font-bold text-[#173126]">Consultation de facture</p></div><div className="flex flex-wrap gap-3">{canAddDetail && <Link href={route('factures.details.create', facture.id)} className="btn-primary">Ajouter un detail</Link>}<Link href={route('factures.index')} className="rounded-xl border border-[#d5e1d6] bg-white px-4 py-2.5 text-sm font-semibold text-[#365246] shadow-sm transition hover:bg-[#f2f7f2]">Retour</Link>{facture.source !== 'import' ? <Link href={route('factures.edit', facture.id)} className={editButton}>Modifier</Link> : canCorrect ? <Link href={route('factures.edit', facture.id)} className={editButton}>Corriger</Link> : <span className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-800">Lecture seule</span>}</div></div>;
 }
 
 const FIELD_LABELS = {
@@ -137,9 +137,9 @@ function History({ facture, historique, serviceNames, canViewArticles }) {
 
     return <div className="space-y-6">
         {Object.keys(origine).length > 0 && <section className="overflow-hidden rounded-[2rem] border border-sky-200 bg-white shadow-xl shadow-[#173126]/5">
-            <div className="border-b border-sky-100 bg-sky-50 px-6 py-5 sm:px-8"><SectionTitle eyebrow="Correction" title="Valeurs importées d'origine conservées" /></div>
+            <div className="border-b border-sky-100 bg-sky-50 px-6 py-5 sm:px-8"><SectionTitle eyebrow="Correction" title="Valeurs d'origine conservées" /></div>
             <div className="overflow-x-auto"><table className="w-full text-left text-sm">
-                <thead className="bg-subtle"><tr><th className="p-4">Champ</th><th className="p-4">Valeur importée</th><th className="p-4">Valeur actuelle</th></tr></thead>
+                <thead className="bg-subtle"><tr><th className="p-4">Champ</th><th className="p-4">Valeur d'origine</th><th className="p-4">Valeur actuelle</th></tr></thead>
                 <tbody>{Object.entries(origine).map(([field, value]) => <tr key={field} className="border-t border-line">
                     <td className="p-4 font-semibold">{FIELD_LABELS[field] || field}</td>
                     <td className="p-4 text-[#5a6e60]">{format(field, value)}</td>
@@ -152,8 +152,7 @@ function History({ facture, historique, serviceNames, canViewArticles }) {
             <div className="border-b border-[#e7ede7] bg-[#f7faf7] px-6 py-5 sm:px-8"><SectionTitle eyebrow="Traçabilité" title="Historique des modifications" /></div>
             <ol className="divide-y divide-[#edf1ed]">
                 {historique.map((log) => <HistoryEntry key={log.id} log={log} format={format} canViewArticles={canViewArticles} />)}
-                {facture.source === 'import' && <li className="flex flex-wrap items-center gap-3 px-6 py-5 sm:px-8"><span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-800">Import</span><p className="text-sm text-[#4e6457]">Importée depuis l'ancien système le {formatDateTime(facture.created_at)}</p></li>}
-                {historique.length === 0 && facture.source !== 'import' && <li className="px-6 py-10 text-center text-sm text-[#718177]">Aucune modification enregistrée.</li>}
+                                {historique.length === 0 && <li className="px-6 py-10 text-center text-sm text-[#718177]">Aucune modification enregistrée.</li>}
             </ol>
         </section>
     </div>;

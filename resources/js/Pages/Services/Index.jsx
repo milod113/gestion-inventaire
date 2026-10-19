@@ -1,13 +1,12 @@
 import PageHeader, { HeaderStat, PlusIcon } from '@/Components/PageHeader';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import SourceBadge, { FlashError, SourceSelect } from '@/Components/SourceBadge';
+import { FlashError } from '@/Components/SourceBadge';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 
 export default function Index({ services, filters }) {
     const { flash = {} } = usePage().props;
     const { data, setData, get, processing } = useForm({
         search: filters.search || '',
-        source: filters.source || '',
     });
 
     const search = (event) => {
@@ -67,9 +66,8 @@ export default function Index({ services, filters }) {
                                 className="w-full rounded-xl border-[#d5e1d6] bg-[#fbfdfb] py-3 pl-11 pr-4 text-sm text-[#20392c] placeholder:text-[#8b998f] focus:border-[#2f7654] focus:ring-[#2f7654]"
                             />
                         </div>
-                        <SourceSelect value={data.source} onChange={(value) => setData('source', value)} className="form-select rounded-xl border-[#d5e1d6] bg-[#fbfdfb] py-3 text-sm focus:border-[#2f7654] focus:ring-[#2f7654]" />
                         <button type="submit" disabled={processing} className="rounded-xl bg-[#1b503a] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#12352a] disabled:opacity-60">Rechercher</button>
-                        {(filters.search || filters.source) &&<button type="button" onClick={clearSearch} className="rounded-xl px-4 py-3 text-sm font-semibold text-[#5c7163] transition hover:bg-[#edf4ee]">Effacer</button>}
+                        {filters.search &&<button type="button" onClick={clearSearch} className="rounded-xl px-4 py-3 text-sm font-semibold text-[#5c7163] transition hover:bg-[#edf4ee]">Effacer</button>}
                     </form>
                 </div>
 
@@ -95,7 +93,7 @@ export default function Index({ services, filters }) {
                                     {services.data.map((service) => (
                                         <tr key={service.id} className="transition hover:bg-[#f4f9f4]">
                                             <td className="px-6 py-4"><span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">{service.code}</span></td>
-                                            <td className="px-6 py-4 text-sm font-semibold text-[#243d30]">{service.name}<SourceBadge source={service.source} /></td>
+                                            <td className="px-6 py-4 text-sm font-semibold text-[#243d30]">{service.name}</td>
                                             <td className="px-6 py-4 text-right text-sm font-bold text-[#1b503a]">{service.articles_count}</td>
                                             <td className="px-6 py-4 text-right text-sm font-semibold text-[#62766a]">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'DZD', maximumFractionDigits: 0 }).format(service.factures_sum_montant || 0)}</td>
                                             <td className="whitespace-nowrap px-6 py-4 text-right"><div className="flex justify-end gap-2">
