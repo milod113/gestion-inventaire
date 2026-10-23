@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/services', [ServiceController::class, 'index'])->middleware('permission:services.view')->name('services.index');
     Route::get('/services/create', [ServiceController::class, 'create'])->middleware('permission:services.create')->name('services.create');
     Route::post('/services', [ServiceController::class, 'store'])->middleware('permission:services.create')->name('services.store');
+    Route::get('/services/{service}/export', [ServiceController::class, 'export'])->middleware(['permission:services.view', 'permission:articles.view'])->name('services.export');
     Route::get('/services/{service}', [ServiceController::class, 'show'])->middleware('permission:services.view')->name('services.show');
     Route::get('/services/{service}/edit', [ServiceController::class, 'edit'])->middleware('permission:services.update')->name('services.edit');
     Route::put('/services/{service}', [ServiceController::class, 'update'])->middleware('permission:services.update')->name('services.update');

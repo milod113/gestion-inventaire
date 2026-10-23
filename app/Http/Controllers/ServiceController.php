@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\XLSX\Writer;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ServiceController extends Controller
 {
@@ -44,30 +48,81 @@ class ServiceController extends Controller
         return Inertia::render('Services/Create');
     }
 
-    public function show(Service $service): Response
+    public function show(Request $request, Service $service): Response
     {
-        $articles = Article::query()->where('service_id', $service->id);
-        $factures = Facture::query()->where('service_id', $service->id);
+        $search = $request->string('search')->trim()->value();
+        $source = $request->string('source')->value();
+
+        $summary = $this->serviceArticles($service, $search, $source)->toBase()
+            ->selectRaw('count(*) as total')
+            ->selectRaw('coalesce(sum(quantite_entree), 0) as entries')
+            ->selectRaw('coalesce(sum(quantite_sortie), 0) as exits')
+            ->first();
 
         return Inertia::render('Services/Show', [
             'service' => $service,
-            'statistics' => [
-                'articles_count' => (clone $articles)->count(),
-                'entries' => (int) (clone $articles)->sum('quantite_entree'),
-                'exits' => (int) (clone $articles)->sum('quantite_sortie'),
-                'factures_count' => (clone $factures)->count(),
-                'factures_amount' => (float) (clone $factures)->sum('montant'),
+            'articles' => $this->serviceArticles($service, $search, $source)
+                ->orderByDesc('date_mouvement')
+                ->orderByDesc('id')
+                ->paginate(50)
+                ->withQueryString(),
+            'summary' => [
+                'total' => (int) $summary->total,
+                'entries' => (int) $summary->entries,
+                'exits' => (int) $summary->exits,
             ],
-            'topArticles' => (clone $articles)
-                ->selectRaw('description, SUM(COALESCE(quantite_sortie, 0)) as total_sortie, COUNT(*) as mouvements')
-                ->groupBy('description')->orderByDesc('total_sortie')->limit(10)->get(),
-            'monthlyMovements' => (clone $articles)
-                ->whereNotNull('date_mouvement')
-                ->selectRaw("DATE_FORMAT(date_mouvement, '%Y-%m') as month, SUM(COALESCE(quantite_entree, 0)) as entries, SUM(COALESCE(quantite_sortie, 0)) as exits")
-                ->groupBy('month')->orderBy('month')->get(),
+            'filters' => ['search' => $search, 'source' => $source],
         ]);
     }
 
+    /** Excel export of the articles shown on the service page (same search, no pagination). */
+    public function export(Request $request, Service $service): StreamedResponse
+    {
+        $search = $request->string('search')->trim()->value();
+        $articles = $this->serviceArticles($service, $search, $request->string('source')->value())
+            ->orderByDesc('date_mouvement')
+            ->orderByDesc('id');
+        $filename = sprintf('articles-service-%s-%s.xlsx', $service->code, now()->format('Y-m-d'));
+
+        return response()->streamDownload(function () use ($articles, $service) {
+            $writer = new Writer();
+            $writer->openToFile('php://output');
+            $writer->addRow(Row::fromValues([
+                'Code service', 'Service', 'Designation', 'Mouvement', 'Date mouvement',
+                'Qte entree', 'Qte sortie', 'N° bon', 'N° inventaire', 'Observation',
+            ], (new Style())->setFontBold()));
+
+            foreach ($articles->lazyById(500) as $article) {
+                $writer->addRow(Row::fromValues([
+                    $service->code,
+                    $service->name,
+                    $article->description,
+                    $article->mouvement,
+                    $article->date_mouvement?->format('d/m/Y'),
+                    $article->quantite_entree === null ? null : (float) $article->quantite_entree,
+                    $article->quantite_sortie === null ? null : (float) $article->quantite_sortie,
+                    $article->numero_bon,
+                    $article->numero_inventaire,
+                    $article->observation,
+                ]));
+            }
+
+            $writer->close();
+        }, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+    }
+
+    /** Same rule as the articles list: linked to the service, or still carrying its source code. */
+    private function serviceArticles(Service $service, string $search, string $source)
+    {
+        return Article::query()
+            ->where(fn ($query) => $query->where('service_id', $service->id)
+                ->orWhere('service_code_source', (string) $service->code))
+            ->fromSource($source)
+            ->when($search, fn ($query, $search) => $query->where(fn ($query) => $query
+                ->where('description', 'like', "%{$search}%")
+                ->orWhere('numero_inventaire', 'like', "%{$search}%")
+                ->orWhere('numero_bon', 'like', "%{$search}%")));
+    }
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([

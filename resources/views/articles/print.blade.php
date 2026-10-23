@@ -21,15 +21,15 @@
         .service-heading small { color: #58675e; font-size: 7px; font-weight: normal; }
         table.data { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 8px; }
         .data th, .data td { border: 1px solid #829087; padding: 5px 4px; vertical-align: top; overflow-wrap: break-word; }
-        .data th { background: #f4f7f4; color: #173e2d; text-align: center; font-size: 7px; }
-        .data td { font-size: 7px; }
+        .data th { background: #f4f7f4; color: #173e2d; text-align: center; font-size: 11px; }
+        .data td { font-size: 11px; }
         .data .description { width: 22%; }
-        .data .movement { width: 8%; text-align: center; }
-        .data .date { width: 10%; text-align: center; }
-        .data .quantity { width: 9%; text-align: center; }
-        .data .bon { width: 11%; }
-        .data .observation { width: 22%; }
-        .data .inventory { width: 18%; }
+        .data .movement { width: 9%; text-align: center; }
+        .data .date { width: 9%; text-align: center; }
+        .data .quantity { width: 6%; text-align: center; }
+        .data .bon { width: 10%; }
+        .data .observation { width: 23%; }
+        .data .inventory { width: 15%; }
         .data tr { page-break-inside: avoid; }
         thead { display: table-header-group; }
         .footer { position: fixed; bottom: -8mm; left: 0; right: 0; color: #637168; font-size: 7px; text-align: right; }
@@ -69,11 +69,11 @@
                 <th class="description">Description</th>
                 <th class="movement">Mouvement</th>
                 <th class="date">Date mouvement</th>
-                <th class="quantity">Quantité entrée</th>
-                <th class="quantity">Quantité sortie</th>
+                <th class="quantity">Qte E</th>
+                <th class="quantity">Qte S</th>
                 <th class="bon">Numéro bon</th>
-                <th class="observation">Observation</th>
                 <th class="inventory">Numéro inventaire</th>
+                <th class="observation">Observation</th>
             </tr></thead>
             <tbody>
             @foreach ($group['articles'] as $article)
@@ -84,8 +84,8 @@
                     <td class="quantity">{{ $article->quantite_entree ?? '—' }}</td>
                     <td class="quantity">{{ $article->quantite_sortie ?? '—' }}</td>
                     <td>{{ $article->numero_bon ?: '—' }}</td>
-                    <td>{{ $article->observation ?: '—' }}</td>
                     <td>{{ $article->numero_inventaire ?: '—' }}</td>
+                    <td>{{ $article->observation ?: '—' }}</td>
                 </tr>
             @endforeach
             </tbody>
