@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\Facture;
 use App\Models\Fournisseur;
+use App\Models\Rappel;
 use App\Models\Service;
 use App\Services\ServiceReferenceNormalizer;
 use Illuminate\Http\RedirectResponse;
@@ -96,6 +97,7 @@ class FactureController extends Controller
             'facture' => $facture->load('service:id,code,name', 'creator:id,name', 'editor:id,name', 'fournisseur:id,code,appellation,telephone,adresse'),
             'details' => $facture->details()->with('article')->orderBy('id')->paginate(50),
             'historique' => $historique,
+            'rappels' => Rappel::enCoursSurFiche($facture, request()->user()),
             'serviceNames' => $this->serviceNames($facture, $historique),
         ]);
     }

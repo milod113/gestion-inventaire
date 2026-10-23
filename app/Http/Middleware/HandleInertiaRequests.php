@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Rappel;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,6 +39,8 @@ class HandleInertiaRequests extends Middleware
                     'permissions' => $request->user()->getAllPermissions()->pluck('name')->values(),
                 ] : null,
             ],
+            // Pastille de la cloche : rappels assignes a l'utilisateur, du jour ou en retard.
+            'rappels_a_echeance' => fn () => $request->user() ? Rappel::aEcheancePour($request->user())->count() : 0,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

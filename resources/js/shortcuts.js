@@ -15,6 +15,7 @@ export const shortcutGroups = [
         icon: 'compass',
         items: [
             { keys: [['G'], ['D']], label: 'Tableau de bord', route: 'dashboard', permission: 'dashboard.view', available: true },
+            { keys: [['G'], ['P']], label: 'Mes rappels', route: 'rappels.index', available: true },
             { keys: [['G'], ['A']], label: 'Articles', route: 'articles.index', permission: 'articles.view', available: true },
             { keys: [['G'], ['F']], label: 'Factures', route: 'factures.index', permission: 'factures.view', available: true },
             { keys: [['G'], ['R']], label: 'Fournisseurs', route: 'fournisseurs.index', permission: 'fournisseurs.view', available: true },
@@ -30,7 +31,7 @@ export const shortcutGroups = [
         description: 'Disponibles depuis n importe quelle page.',
         icon: 'bolt',
         items: [
-            { keys: [['Ctrl', 'K']], label: 'Ouvrir la palette de commandes', hint: 'Rechercher une page ou une action en tapant quelques lettres', available: true },
+            { keys: [['Ctrl', 'K']], label: 'Recherche globale', hint: 'Trouver un article, une facture, un fournisseur, une page ou une action', available: true },
             { keys: [['N'], ['A']], label: 'Nouvel article', route: 'articles.create', permission: 'articles.create', available: true },
             { keys: [['N'], ['F']], label: 'Nouvelle facture', route: 'factures.create', permission: 'factures.create', available: true },
             { keys: [['N'], ['R']], label: 'Nouveau fournisseur', route: 'fournisseurs.create', permission: 'fournisseurs.create', available: true },

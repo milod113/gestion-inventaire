@@ -1,6 +1,7 @@
 import Dropdown from '@/Components/Dropdown';
 import Kbd from '@/Components/Kbd';
 import KeyboardShortcuts, { openCommandPalette } from '@/Components/KeyboardShortcuts';
+import { ReminderBell, ReminderHost } from '@/Components/Reminders';
 import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
@@ -9,6 +10,7 @@ const navigationGroups = [
         label: 'Pilotage',
         items: [
             { label: "Vue d'ensemble", description: 'Tableau de bord', href: 'dashboard', active: 'dashboard', icon: 'grid' },
+            { label: 'Mes rappels', description: 'Travaux a effectuer', href: 'rappels.index', active: 'rappels.*', icon: 'bell', badge: 'rappels_a_echeance' },
             { label: 'Importation', description: 'Controle des fichiers', href: 'imports.index', active: ['imports.index', 'imports.show'], icon: 'upload', adminOnly: true },
             { label: 'Import avance', description: 'Scan des archives DBF', href: 'imports.advanced', active: 'imports.advanced', icon: 'archive', adminOnly: true },
             { label: 'Qualite des donnees', description: 'Anomalies a corriger', href: 'quality.index', active: 'quality.*', icon: 'check', permission: 'articles.view' },
@@ -167,9 +169,18 @@ export default function AuthenticatedLayout({ header, children }) {
                             className="hidden h-9 w-64 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-sm text-muted shadow-sm transition hover:border-brand-300 hover:text-ink md:flex"
                         >
                             <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path strokeLinecap="round" d="m16 16 4 4" /></svg>
-                            <span className="flex-1 text-left">Rechercher...</span>
+                            <span className="flex-1 truncate text-left">Article, facture, fournisseur...</span>
                             <span className="flex items-center gap-0.5"><Kbd size="sm">Ctrl</Kbd><Kbd size="sm">K</Kbd></span>
                         </button>
+                        <button
+                            type="button"
+                            onClick={openCommandPalette}
+                            className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-muted shadow-sm transition hover:text-ink md:hidden"
+                            aria-label="Rechercher"
+                        >
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path strokeLinecap="round" d="m16 16 4 4" /></svg>
+                        </button>
+                        <ReminderBell />
                         <button
                             type="button"
                             onClick={() => setDark((value) => !value)}
@@ -197,6 +208,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     <main>{children}</main>
                 </div>
             <KeyboardShortcuts />
+            <ReminderHost />
             </div>
         </div>
     );
@@ -204,6 +216,8 @@ export default function AuthenticatedLayout({ header, children }) {
 
 function NavigationItem({ item, collapsed, closeSidebar }) {
     const active = isActive(item);
+    const props = usePage().props;
+    const badge = item.badge ? props[item.badge] : 0;
 
     return (
         <Link
@@ -218,6 +232,7 @@ function NavigationItem({ item, collapsed, closeSidebar }) {
                 <Icon name={item.icon} />
             </span>
             <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
+            {badge > 0 && <span className={`ml-auto grid h-5 min-w-[20px] place-items-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ${collapsed ? 'lg:absolute lg:right-2 lg:top-1 lg:ml-0 lg:h-4 lg:min-w-[16px] lg:px-1' : ''}`}>{badge > 99 ? '99+' : badge}</span>}
         </Link>
     );
 }
@@ -268,6 +283,7 @@ const iconPaths = {
     help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01" /></>,
     check: <><path d="M9 11l2 2 4-4" /><path d="M12 3 5 6v5c0 4.5 2.9 8.6 7 10 4.1-1.4 7-5.5 7-10V6l-7-3Z" /></>,
     menu: <path d="M4 6h16M4 12h16M4 18h16" />,
+    bell: <><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
     close: <path d="m6 6 12 12M18 6 6 18" />,
     collapse: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M16 10l-2 2 2 2" /></>,
     expand: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M14 10l2 2-2 2" /></>,

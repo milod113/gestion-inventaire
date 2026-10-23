@@ -37,6 +37,7 @@ export default {
                     700: '#1b503a',
                     800: '#12352a',
                     900: '#0b241c',
+                    950: '#06170f',
                 },
                 gold: {
                     300: '#f3c361',
@@ -50,6 +51,18 @@ export default {
             },
             boxShadow: {
                 card: '0 1px 2px rgb(16 24 20 / 0.04), 0 1px 3px rgb(16 24 20 / 0.06)',
+            },
+            keyframes: {
+                // Petite oscillation de la cloche quand des rappels sont a traiter.
+                bell: {
+                    '0%, 100%': { transform: 'rotate(0)' },
+                    '15%, 45%': { transform: 'rotate(14deg)' },
+                    '30%, 60%': { transform: 'rotate(-12deg)' },
+                    '75%': { transform: 'rotate(5deg)' },
+                },
+            },
+            animation: {
+                bell: 'bell 0.9s ease-in-out 1',
             },
         },
     },

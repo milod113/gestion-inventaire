@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Facture;
+use App\Models\Rappel;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -254,7 +255,7 @@ class ArticleController extends Controller
             $article->load('detailFacture.facture:id,numero_facture');
         }
 
-        return Inertia::render('Articles/Show', ['article' => $article]);
+        return Inertia::render('Articles/Show', ['article' => $article, 'rappels' => Rappel::enCoursSurFiche($article, $request->user())]);
     }
 
     public function edit(Request $request, Article $article): Response

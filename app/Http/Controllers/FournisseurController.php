@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Facture;
 use App\Models\Fournisseur;
+use App\Models\Rappel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -40,9 +41,12 @@ class FournisseurController extends Controller
         return redirect()->route('fournisseurs.index')->with('success', 'Fournisseur ajoute avec succes.');
     }
 
-    public function show(Fournisseur $fournisseur): Response
+    public function show(Request $request, Fournisseur $fournisseur): Response
     {
-        return Inertia::render('Fournisseurs/Show', ['fournisseur' => $fournisseur->load('creator:id,name', 'editor:id,name')]);
+        return Inertia::render('Fournisseurs/Show', [
+            'fournisseur' => $fournisseur->load('creator:id,name', 'editor:id,name'),
+            'rappels' => Rappel::enCoursSurFiche($fournisseur, $request->user()),
+        ]);
     }
 
     public function edit(Fournisseur $fournisseur): Response

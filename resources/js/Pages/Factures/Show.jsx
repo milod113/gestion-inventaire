@@ -1,11 +1,12 @@
 import AuditInfo from '@/Components/AuditInfo';
+import { RecordReminders } from '@/Components/Reminders';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 const money = (value) => value === null || value === undefined || value === '' ? 'Non renseigne' : new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'DZD' }).format(value);
 
-export default function Show({ facture, details, historique = [], serviceNames = {} }) {
+export default function Show({ facture, details, historique = [], serviceNames = {}, rappels = [] }) {
     const { auth, flash = {} } = usePage().props;
     const [tab, setTab] = useState(() => (typeof window !== 'undefined' && window.location.hash === '#historique' ? 'historique' : 'facture'));
     const amount = facture.montant ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'DZD', minimumFractionDigits: 2 }).format(facture.montant) : 'Montant indisponible';
@@ -22,6 +23,7 @@ export default function Show({ facture, details, historique = [], serviceNames =
                     {flash.success && <p className="rounded-xl bg-emerald-50 p-4 text-emerald-800">{flash.success}</p>}
                     {flash.error && <p className="rounded-xl bg-red-50 p-4 text-red-800">{flash.error}</p>}
                     <AuditInfo record={facture} />
+                    <RecordReminders rappels={rappels} fiche={{ type: 'facture', id: facture.id, label: `Facture ${facture.numero_facture || `#${facture.id}`}` }} />
                     <section className="overflow-hidden rounded-[2rem] bg-[#163d2e] text-white shadow-2xl shadow-[#12352a]/15">
                         <div className="relative grid gap-8 px-7 py-8 sm:px-10 lg:grid-cols-[1.3fr_0.7fr] lg:items-end lg:py-10">
                             <div className="absolute -left-20 -top-28 h-72 w-72 rounded-full bg-[#2d7454]/60 blur-3xl" />

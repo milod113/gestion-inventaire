@@ -1,5 +1,6 @@
 import { KeyCombo } from '@/Components/Kbd';
 import PageHeader from '@/Components/PageHeader';
+import { BellIcon, daysUntil, EmptyState, openReminder, PlusIcon, ReminderItem } from '@/Components/Reminders';
 import { shortcutKeys } from '@/shortcuts';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
@@ -22,7 +23,7 @@ const quickActions = [
     { label: 'Ajouter un service', href: 'services.create', icon: 'building', permission: 'services.create' },
 ];
 
-export default function Dashboard({ stats, recentFactures }) {
+export default function Dashboard({ stats, recentFactures, rappels = [] }) {
     const user = usePage().props.auth.user;
     const allowedActions = quickActions.filter((action) => user.permissions?.includes(action.permission));
     const today = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
@@ -108,6 +109,8 @@ export default function Dashboard({ stats, recentFactures }) {
                     </div>
 
                     <div className="space-y-6">
+                        <RemindersCard rappels={rappels} />
+
                         <div className="relative overflow-hidden rounded-2xl bg-brand-800 p-6 text-white shadow-card">
                             <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/20 blur-2xl" />
                             <p className="relative text-sm font-medium text-brand-100/80">Montant total facture</p>
@@ -130,6 +133,32 @@ export default function Dashboard({ stats, recentFactures }) {
                 </section>
             </div>
         </AuthenticatedLayout>
+    );
+}
+
+function RemindersCard({ rappels }) {
+    const { rappels_a_echeance: due = 0 } = usePage().props;
+    const late = rappels.filter((rappel) => daysUntil(rappel.echeance) < 0).length;
+
+    return (
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
+            <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
+                <div className="flex items-center gap-3">
+                    <span className={`grid h-10 w-10 place-items-center rounded-xl ${due ? 'bg-gold-400/15 text-gold-500' : 'bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300'}`}><BellIcon /></span>
+                    <div>
+                        <h2 className="text-base font-semibold text-ink">Vos rappels</h2>
+                        <p className="text-xs text-muted">{due ? `${due} a traiter aujourd hui${late ? ` · ${late} en retard` : ''}` : 'Rien a traiter aujourd hui'}</p>
+                    </div>
+                </div>
+                <button type="button" onClick={() => openReminder()} className="grid h-9 w-9 place-items-center rounded-xl border border-line text-muted transition hover:border-brand-300 hover:text-brand-600 dark:hover:text-brand-300" aria-label="Nouveau rappel" title="Nouveau rappel"><PlusIcon /></button>
+            </div>
+            {rappels.length === 0 ? (
+                <EmptyState compact title="Aucun rappel en cours" text="Notez ici un travail a faire plus tard, ou confiez-le a un collegue." />
+            ) : (
+                <div className="space-y-0.5 p-2">{rappels.map((rappel) => <ReminderItem key={rappel.id} rappel={rappel} compact />)}</div>
+            )}
+            <Link href={route('rappels.index')} className="block border-t border-line px-5 py-3 text-center text-sm font-semibold text-brand-600 transition hover:bg-subtle dark:text-brand-300">Voir tous mes rappels</Link>
+        </div>
     );
 }
 

@@ -4,6 +4,8 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\FactureController;
 use App\Http\Controllers\FactureFournisseurController;
 use App\Http\Controllers\FournisseurController;
+use App\Http\Controllers\GlobalSearchController;
+use App\Http\Controllers\RappelController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\BackupController;
@@ -15,7 +17,9 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Models\Article;
 use App\Models\Facture;
 use App\Models\Fournisseur;
+use App\Models\Rappel;
 use App\Models\Service;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -23,7 +27,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
+Route::get('/dashboard', function (Request $request) {
     return Inertia::render('Dashboard', [
         'stats' => [
             'articles' => Article::count(),
@@ -36,6 +40,9 @@ Route::get('/dashboard', function () {
             ->latest('id')
             ->limit(5)
             ->get(['id', 'service_id', 'numero_facture', 'date_facture', 'montant', 'code_fournisseur']),
+        'rappels' => Rappel::query()->ouverts()->where('assigne_a', $request->user()->id)
+            ->chronologique()->with('auteur:id,name', 'assigne:id,name', 'rappelable')->limit(5)->get()
+            ->map->presenter($request->user()),
     ]);
 })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
 
@@ -58,6 +65,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/factures/{facture}/details', [ArticleController::class, 'storeForFacture'])
         ->middleware(['permission:factures.view', 'permission:articles.view', 'permission:articles.create'])
         ->name('factures.details.store');
+
+    Route::get('/recherche', GlobalSearchController::class)->name('search');
+
+    Route::get('/rappels', [RappelController::class, 'index'])->name('rappels.index');
+    Route::get('/rappels/cloche', [RappelController::class, 'cloche'])->name('rappels.cloche');
+    Route::get('/rappels/utilisateurs', [RappelController::class, 'utilisateurs'])->name('rappels.utilisateurs');
+    Route::post('/rappels', [RappelController::class, 'store'])->name('rappels.store');
+    Route::put('/rappels/{rappel}', [RappelController::class, 'update'])->name('rappels.update');
+    Route::patch('/rappels/{rappel}/terminer', [RappelController::class, 'terminer'])->name('rappels.terminer');
+    Route::patch('/rappels/{rappel}/reporter', [RappelController::class, 'reporter'])->name('rappels.reporter');
+    Route::delete('/rappels/{rappel}', [RappelController::class, 'destroy'])->name('rappels.destroy');
 
     // Declarees avant la ressource "factures" pour ne pas etre capturees par /factures/{facture}.
     Route::get('/factures/fournisseurs/recherche', [FactureFournisseurController::class, 'search'])

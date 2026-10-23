@@ -222,8 +222,56 @@ function SequenceHint({ prefix, options }) {
     );
 }
 
+const RECORD_SECTIONS = [
+    ['articles', 'Articles', 'A'],
+    ['factures', 'Factures', 'F'],
+    ['fournisseurs', 'Fournisseurs', 'R'],
+];
+
+// Articles, factures et fournisseurs trouves cote serveur (au moins 2 caracteres, saisie temporisee).
+function useRecordSearch(query) {
+    const [records, setRecords] = useState({});
+    const [loading, setLoading] = useState(false);
+    const request = useRef(0);
+
+    useEffect(() => {
+        const term = query.trim();
+        const id = ++request.current;
+        if (term.length < 2) {
+            setRecords({});
+            setLoading(false);
+            return undefined;
+        }
+        setLoading(true);
+        const timer = setTimeout(() => {
+            window.axios.get(route('search'), { params: { q: term } })
+                .then(({ data }) => { if (id === request.current) setRecords(data); })
+                .catch(() => { if (id === request.current) setRecords({}); })
+                .finally(() => { if (id === request.current) setLoading(false); });
+        }, 200);
+        return () => clearTimeout(timer);
+    }, [query]);
+
+    return { records, loading };
+}
+
+// Met en evidence le terme recherche (sans tenir compte des accents ni de la casse).
+function Highlight({ text, term, className }) {
+    const needle = normalize(term.trim());
+    const index = needle ? normalize(text).indexOf(needle) : -1;
+    if (index < 0) return <span className={className}>{text}</span>;
+    return (
+        <span className={className}>
+            {text.slice(0, index)}
+            <mark className="rounded bg-gold-400/30 px-0.5 text-inherit">{text.slice(index, index + needle.length)}</mark>
+            {text.slice(index + needle.length)}
+        </span>
+    );
+}
+
 function CommandPalette({ open, onClose, groups }) {
     const [query, setQuery] = useState('');
+    const { records, loading } = useRecordSearch(query);
 
     // Every shortcut that leads to a page becomes a palette command.
     const commands = useMemo(() => {
@@ -241,11 +289,15 @@ function CommandPalette({ open, onClose, groups }) {
     const sections = ['Aller a', 'Creer']
         .map((section) => ({ section, items: results.filter((command) => command.section === section) }))
         .filter((group) => group.items.length > 0);
+    const recordSections = RECORD_SECTIONS
+        .filter(([key]) => records[key]?.length)
+        .map(([key, section, badge]) => ({ section, badge, items: records[key].map((record) => ({ ...record, key: `${key}-${record.id}` })) }));
+    const hasResults = recordSections.length > 0 || sections.length > 0;
 
     const run = (command) => {
         if (!command) return;
         onClose();
-        router.visit(route(command.route));
+        router.visit(command.url ?? route(command.route));
     };
 
     return (
@@ -259,15 +311,31 @@ function CommandPalette({ open, onClose, groups }) {
                             <ComboboxInput
                                 autoFocus
                                 className="h-14 w-full border-0 bg-transparent px-0 text-sm text-ink placeholder:text-muted/70 focus:ring-0"
-                                placeholder="Rechercher une page ou une action..."
+                                placeholder="Article, facture, fournisseur, page..."
                                 onChange={(event) => setQuery(event.target.value)}
                                 autoComplete="off"
                             />
+                            {loading && <svg className="h-4 w-4 shrink-0 animate-spin text-muted" fill="none" viewBox="0 0 24 24" aria-label="Recherche en cours"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" /><path fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4Z" className="opacity-75" /></svg>}
                             <Kbd size="sm">Echap</Kbd>
                         </div>
 
-                        {sections.length > 0 ? (
-                            <ComboboxOptions static className="max-h-80 overflow-y-auto p-2">
+                        {hasResults ? (
+                            <ComboboxOptions static className="max-h-[60vh] overflow-y-auto p-2">
+                                {recordSections.map(({ section, badge, items }) => (
+                                    <div key={section} className="mb-1 last:mb-0">
+                                        <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-muted">{section}</p>
+                                        {items.map((record) => (
+                                            <ComboboxOption key={record.key} value={record} className="group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm text-ink data-[focus]:bg-brand-50 data-[focus]:text-brand-800 dark:data-[focus]:bg-brand-500/15 dark:data-[focus]:text-brand-100">
+                                                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-subtle text-xs font-bold text-muted ring-1 ring-line group-data-[focus]:bg-surface">{badge}</span>
+                                                <span className="min-w-0 flex-1">
+                                                    <Highlight text={record.title} term={query} className="block truncate font-medium" />
+                                                    {record.subtitle && <Highlight text={record.subtitle} term={query} className="block truncate text-xs text-muted" />}
+                                                </span>
+                                                <svg className="invisible h-4 w-4 shrink-0 text-muted group-data-[focus]:visible" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" /></svg>
+                                            </ComboboxOption>
+                                        ))}
+                                    </div>
+                                ))}
                                 {sections.map(({ section, items }) => (
                                     <div key={section} className="mb-1 last:mb-0">
                                         <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-muted">{section}</p>
@@ -281,7 +349,7 @@ function CommandPalette({ open, onClose, groups }) {
                                 ))}
                             </ComboboxOptions>
                         ) : (
-                            <p className="px-6 py-10 text-center text-sm text-muted">Aucun resultat pour « {query} »</p>
+                            <p className="px-6 py-10 text-center text-sm text-muted">{loading ? 'Recherche...' : `Aucun resultat pour « ${query} »`}</p>
                         )}
 
                         <div className="flex items-center gap-4 border-t border-line bg-subtle/60 px-4 py-2.5 text-[11px] text-muted">
