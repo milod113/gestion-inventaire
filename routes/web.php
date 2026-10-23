@@ -42,7 +42,6 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/services', [ServiceController::class, 'index'])->middleware('permission:services.view')->name('services.index');
     Route::get('/services/create', [ServiceController::class, 'create'])->middleware('permission:services.create')->name('services.create');

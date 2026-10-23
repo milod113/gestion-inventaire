@@ -53,8 +53,8 @@ export default function Login({ status, canResetPassword }) {
                         {status && <div role="status" className="mt-6 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 dark:text-emerald-300">{status}</div>}
                         <form onSubmit={submit} className="mt-8 space-y-5">
                             <div>
-                                <label htmlFor="email" className="block text-sm font-bold text-[#294337]">Adresse e-mail</label>
-                                <input id="email" name="email" type="email" autoComplete="username" value={data.email} autoFocus onChange={(event) => setData('email', event.target.value)} aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'email-error' : undefined} className="mt-2 block w-full rounded-xl border-[#d5e1d6] bg-white px-4 py-3 text-sm focus:border-emerald-600 focus:ring-emerald-600 dark:focus:border-emerald-400 dark:focus:ring-emerald-400" />
+                                <label htmlFor="email" className="block text-sm font-bold text-[#294337]">Adresse e-mail ou téléphone</label>
+                                <input id="email" name="email" type="text" autoComplete="username" value={data.email} autoFocus onChange={(event) => setData('email', event.target.value)} aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'email-error' : undefined} className="mt-2 block w-full rounded-xl border-[#d5e1d6] bg-white px-4 py-3 text-sm focus:border-emerald-600 focus:ring-emerald-600 dark:focus:border-emerald-400 dark:focus:ring-emerald-400" />
                                 <InputError id="email-error" message={errors.email} className="mt-2" />
                             </div>
                             <div>

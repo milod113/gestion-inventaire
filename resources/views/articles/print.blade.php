@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>État des mouvements de stock</title>
+    <title>Fiche d'inventaire</title>
     <style>
         @page { size: A4 landscape; margin: 9mm 10mm 14mm; }
         body { color: #202923; font-family: DejaVu Sans, sans-serif; font-size: 8px; }
@@ -49,7 +49,7 @@
         </tr>
     </table>
 
-    <div class="title">État des mouvements de stock</div>
+    <div class="title">Fiche d'inventaire</div>
     <div class="subtitle">Document généré le {{ $generatedAt }} · {{ $articles->count() }} article(s)</div>
 
     <table class="meta">

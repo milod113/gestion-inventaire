@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,7 +29,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            // Despite its name, this field takes an e-mail address or a phone number.
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -42,7 +44,14 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt([...$this->only('email', 'password'), 'is_active' => true], $this->boolean('remember'))) {
+        $identifier = trim($this->string('email')->value());
+        $credentials = str_contains($identifier, '@')
+            ? ['email' => $identifier]
+            : ['telephone' => User::normalizePhone($identifier)];
+
+        // A null phone would match every account without one, so it never reaches the provider.
+        if (in_array(null, $credentials, true)
+            || ! Auth::attempt([...$credentials, 'password' => $this->input('password'), 'is_active' => true], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

@@ -141,7 +141,7 @@ class ArticleController extends Controller
             'logo' => $logo,
         ])
             ->setPaper('a4', 'landscape')
-            ->download('mouvements-inventaire.pdf');
+            ->download('fiche-inventaire.pdf');
     }
 
     public function labels(Request $request)

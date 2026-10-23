@@ -25,7 +25,8 @@ class UserController extends Controller
                 ->with('roles:id,name')
                 ->when($search, fn ($query) => $query->where(fn ($query) => $query
                     ->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")))
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->when(User::normalizePhone($search), fn ($query, $phone) => $query->orWhere('telephone', 'like', "%{$phone}%"))))
                 ->when($role, fn ($query) => $query->role($role))
                 ->when($status === 'active', fn ($query) => $query->where('is_active', true))
                 ->when($status === 'inactive', fn ($query) => $query->where('is_active', false))
@@ -140,6 +141,7 @@ class UserController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user)],
+            'telephone' => User::telephoneRules($user),
             'password' => [$creating ? 'required' : 'nullable', 'confirmed', 'min:8'],
             'role' => ['required', 'string', Rule::exists('roles', 'name')->where('guard_name', 'web')],
             'is_active' => ['required', 'boolean'],
