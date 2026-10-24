@@ -24,26 +24,26 @@ export default function Show({ facture, details, historique = [], serviceNames =
                     {flash.error && <p className="rounded-xl bg-red-50 p-4 text-red-800">{flash.error}</p>}
                     <AuditInfo record={facture} />
                     <RecordReminders rappels={rappels} fiche={{ type: 'facture', id: facture.id, label: `Facture ${facture.numero_facture || `#${facture.id}`}` }} />
-                    <section className="overflow-hidden rounded-[2rem] bg-[#163d2e] text-white shadow-2xl shadow-[#12352a]/15">
+                    <section className="overflow-hidden rounded-[2rem] bg-[#7c2d12] text-white shadow-2xl shadow-[#7c2d12]/15">
                         <div className="relative grid gap-8 px-7 py-8 sm:px-10 lg:grid-cols-[1.3fr_0.7fr] lg:items-end lg:py-10">
-                            <div className="absolute -left-20 -top-28 h-72 w-72 rounded-full bg-[#2d7454]/60 blur-3xl" />
-                            <div className="absolute -bottom-28 right-1/4 h-56 w-56 rounded-full border-[28px] border-[#e5ad45]/15" />
+                            <div className="absolute -left-20 -top-28 h-72 w-72 rounded-full bg-[#ea580c]/60 blur-3xl" />
+                            <div className="absolute -bottom-28 right-1/4 h-56 w-56 rounded-full border-[28px] border-[#fbbf24]/15" />
                             <div className="relative">
-                                <div className="flex flex-wrap items-center gap-3"><span className="h-2.5 w-2.5 rounded-full bg-[#e5ad45]" /><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-100/65">Facture</p>{facture.corrigee_at && <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-sky-900">Corrigée le {formatDateTime(facture.corrigee_at)}</span>}</div>
+                                <div className="flex flex-wrap items-center gap-3"><span className="h-2.5 w-2.5 rounded-full bg-[#fbbf24]" /><p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-100/65">Facture</p>{facture.corrigee_at && <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-sky-900">Corrigée le {formatDateTime(facture.corrigee_at)}</span>}</div>
                                 <h1 className="mt-5 break-words text-4xl font-bold tracking-tight sm:text-5xl">{facture.numero_facture || 'Sans numero'}</h1>
                                 <div className="mt-5 flex flex-wrap gap-3 text-sm"><Pill label="N. bon" value={facture.n_bon} /><Pill label="Date facture" value={formatDate(facture.date_facture)} /></div>
                             </div>
                             <div className="relative rounded-3xl border border-white/10 bg-white/[0.08] p-6 backdrop-blur-sm">
-                                <p className="text-sm font-medium text-emerald-100/70">Montant engage</p>
-                                <p className="mt-3 break-words text-3xl font-bold tracking-tight text-[#f5c86c] sm:text-4xl">{amount}</p>
-                                <div className="mt-6 border-t border-white/10 pt-4"><p className="text-xs uppercase tracking-[0.14em] text-emerald-100/55">Mandat</p><p className="mt-1 text-sm font-semibold">{facture.n_mandat || 'Non renseigne'}</p></div>
+                                <p className="text-sm font-medium text-brand-100/70">Montant engage</p>
+                                <p className="mt-3 break-words text-3xl font-bold tracking-tight text-[#fcd34d] sm:text-4xl">{amount}</p>
+                                <div className="mt-6 border-t border-white/10 pt-4"><p className="text-xs uppercase tracking-[0.14em] text-brand-100/55">Mandat</p><p className="mt-1 text-sm font-semibold">{facture.n_mandat || 'Non renseigne'}</p></div>
                             </div>
                         </div>
                     </section>
 
-                    <div className="flex gap-1 rounded-2xl border border-[#dce5dd] bg-white p-1 shadow-sm sm:w-fit" role="tablist" aria-label="Sections de la facture">
+                    <div className="flex gap-1 rounded-2xl border border-[#eadfd7] bg-white p-1 shadow-sm sm:w-fit" role="tablist" aria-label="Sections de la facture">
                         <TabButton active={tab === 'facture'} onClick={() => chooseTab('facture')}>Facture</TabButton>
-                        <TabButton active={tab === 'historique'} onClick={() => chooseTab('historique')}>Historique<span className="ml-2 rounded-full bg-[#edf1ed] px-2 py-0.5 text-xs text-[#5a6e60]">{historique.length}</span></TabButton>
+                        <TabButton active={tab === 'historique'} onClick={() => chooseTab('historique')}>Historique<span className="ml-2 rounded-full bg-[#f3eeeb] px-2 py-0.5 text-xs text-[#6d625b]">{historique.length}</span></TabButton>
                     </div>
 
                     {tab === 'historique' ? <History facture={facture} historique={historique} serviceNames={serviceNames} canViewArticles={can('articles.view')} /> : <>
@@ -74,14 +74,14 @@ export default function Show({ facture, details, historique = [], serviceNames =
                     </section>
 
                     <section className="grid gap-6 lg:grid-cols-[1fr_1.65fr]">
-                        <div className="rounded-[2rem] border border-[#dce5dd] bg-white p-6 shadow-xl shadow-[#173126]/5 sm:p-8">
+                        <div className="rounded-[2rem] border border-[#eadfd7] bg-white p-6 shadow-xl shadow-[#431407]/5 sm:p-8">
                             <SectionTitle eyebrow="Affectation" title="Service concerne" />
-                            <div className="mt-7 rounded-2xl bg-[#edf6ef] p-5"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1b503a] text-sm font-bold text-white">{facture.service?.code || '--'}</div><p className="mt-4 break-words text-base font-bold leading-6 text-[#1b3328]">{service}</p></div>
-                            <div className="mt-5 border-t border-[#e7ede7] pt-5"><DataLine label="Reference source" value={facture.service_reference} /><DataLine label="Imputation" value={facture.imputation} /></div>
+                            <div className="mt-7 rounded-2xl bg-[#fff7ed] p-5"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#c2410c] text-sm font-bold text-white">{facture.service?.code || '--'}</div><p className="mt-4 break-words text-base font-bold leading-6 text-[#32251c]">{service}</p></div>
+                            <div className="mt-5 border-t border-[#f0e9e4] pt-5"><DataLine label="Reference source" value={facture.service_reference} /><DataLine label="Imputation" value={facture.imputation} /></div>
                         </div>
 
-                        <div className="overflow-hidden rounded-[2rem] border border-[#dce5dd] bg-white shadow-xl shadow-[#173126]/5">
-                            <div className="border-b border-[#e7ede7] bg-[#f7faf7] px-6 py-5 sm:px-8"><SectionTitle eyebrow="Pieces comptables" title="Informations de reference" /></div>
+                        <div className="overflow-hidden rounded-[2rem] border border-[#eadfd7] bg-white shadow-xl shadow-[#431407]/5">
+                            <div className="border-b border-[#f0e9e4] bg-[#fbf8f6] px-6 py-5 sm:px-8"><SectionTitle eyebrow="Pieces comptables" title="Informations de reference" /></div>
                             <div className="grid gap-x-10 gap-y-6 p-6 sm:grid-cols-2 sm:p-8">
                                 <DataLine label="Numero de bon" value={facture.n_bon} />
                                 <DataLine label="Numero journal" value={facture.n_journal} />
@@ -93,8 +93,8 @@ export default function Show({ facture, details, historique = [], serviceNames =
                         </div>
                     </section>
 
-                    <section className="overflow-hidden rounded-[2rem] border border-[#dce5dd] bg-white shadow-xl shadow-[#173126]/5">
-                        <div className="flex flex-col gap-3 border-b border-[#e7ede7] bg-[#f7faf7] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8"><SectionTitle eyebrow="Controle import" title="Dates et correction DBF" /><span className="w-fit rounded-full bg-[#fff2d8] px-3 py-1 text-xs font-bold text-[#9a6416]">Valeurs source conservees</span></div>
+                    <section className="overflow-hidden rounded-[2rem] border border-[#eadfd7] bg-white shadow-xl shadow-[#431407]/5">
+                        <div className="flex flex-col gap-3 border-b border-[#f0e9e4] bg-[#fbf8f6] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8"><SectionTitle eyebrow="Controle import" title="Dates et correction DBF" /><span className="w-fit rounded-full bg-[#fff2d8] px-3 py-1 text-xs font-bold text-[#9a6416]">Valeurs source conservees</span></div>
                         <div className="grid gap-4 p-6 sm:grid-cols-2 sm:p-8">
                             <DateCard label="Date de facture" corrected={facture.date_facture} source={facture.date_facture_source} />
                             <DateCard label="Date de mandat" corrected={facture.date_mandat} source={facture.date_mandat_source} />
@@ -108,8 +108,8 @@ export default function Show({ facture, details, historique = [], serviceNames =
 }
 
 function Header({ facture, canAddDetail, canCorrect }) {
-    const editButton = 'rounded-xl bg-[#e5ad45] px-4 py-2.5 text-sm font-bold text-[#173126] shadow-sm transition hover:bg-[#f3c361]';
-    return <div className="flex items-center justify-between"><div><p className="text-sm font-medium text-[#718177]">Comptabilite / Factures</p><p className="mt-1 text-xl font-bold text-[#173126]">Consultation de facture</p></div><div className="flex flex-wrap gap-3">{canAddDetail && <Link href={route('factures.details.create', facture.id)} className="btn-primary">Ajouter un detail</Link>}<Link href={route('factures.index')} className="rounded-xl border border-[#d5e1d6] bg-white px-4 py-2.5 text-sm font-semibold text-[#365246] shadow-sm transition hover:bg-[#f2f7f2]">Retour</Link>{facture.source !== 'import' ? <Link href={route('factures.edit', facture.id)} className={editButton}>Modifier</Link> : canCorrect ? <Link href={route('factures.edit', facture.id)} className={editButton}>Corriger</Link> : <span className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-800">Lecture seule</span>}</div></div>;
+    const editButton = 'rounded-xl bg-[#fbbf24] px-4 py-2.5 text-sm font-bold text-[#431407] shadow-sm transition hover:bg-[#fcd34d]';
+    return <div className="flex items-center justify-between"><div><p className="text-sm font-medium text-[#807872]">Comptabilite / Factures</p><p className="mt-1 text-xl font-bold text-[#431407]">Consultation de facture</p></div><div className="flex flex-wrap gap-3">{canAddDetail && <Link href={route('factures.details.create', facture.id)} className="btn-primary">Ajouter un detail</Link>}<Link href={route('factures.index')} className="rounded-xl border border-[#e7d9cf] bg-white px-4 py-2.5 text-sm font-semibold text-[#514137] shadow-sm transition hover:bg-[#f9f4f0]">Retour</Link>{facture.source !== 'import' ? <Link href={route('factures.edit', facture.id)} className={editButton}>Modifier</Link> : canCorrect ? <Link href={route('factures.edit', facture.id)} className={editButton}>Corriger</Link> : <span className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-800">Lecture seule</span>}</div></div>;
 }
 
 const FIELD_LABELS = {
@@ -138,23 +138,23 @@ function History({ facture, historique, serviceNames, canViewArticles }) {
     };
 
     return <div className="space-y-6">
-        {Object.keys(origine).length > 0 && <section className="overflow-hidden rounded-[2rem] border border-sky-200 bg-white shadow-xl shadow-[#173126]/5">
+        {Object.keys(origine).length > 0 && <section className="overflow-hidden rounded-[2rem] border border-sky-200 bg-white shadow-xl shadow-[#431407]/5">
             <div className="border-b border-sky-100 bg-sky-50 px-6 py-5 sm:px-8"><SectionTitle eyebrow="Correction" title="Valeurs d'origine conservées" /></div>
             <div className="overflow-x-auto"><table className="w-full text-left text-sm">
                 <thead className="bg-subtle"><tr><th className="p-4">Champ</th><th className="p-4">Valeur d'origine</th><th className="p-4">Valeur actuelle</th></tr></thead>
                 <tbody>{Object.entries(origine).map(([field, value]) => <tr key={field} className="border-t border-line">
                     <td className="p-4 font-semibold">{FIELD_LABELS[field] || field}</td>
-                    <td className="p-4 text-[#5a6e60]">{format(field, value)}</td>
-                    <td className="p-4 font-semibold text-[#1b503a]">{format(field, facture[field])}</td>
+                    <td className="p-4 text-[#6d625b]">{format(field, value)}</td>
+                    <td className="p-4 font-semibold text-[#c2410c]">{format(field, facture[field])}</td>
                 </tr>)}</tbody>
             </table></div>
         </section>}
 
-        <section className="overflow-hidden rounded-[2rem] border border-[#dce5dd] bg-white shadow-xl shadow-[#173126]/5">
-            <div className="border-b border-[#e7ede7] bg-[#f7faf7] px-6 py-5 sm:px-8"><SectionTitle eyebrow="Traçabilité" title="Historique des modifications" /></div>
-            <ol className="divide-y divide-[#edf1ed]">
+        <section className="overflow-hidden rounded-[2rem] border border-[#eadfd7] bg-white shadow-xl shadow-[#431407]/5">
+            <div className="border-b border-[#f0e9e4] bg-[#fbf8f6] px-6 py-5 sm:px-8"><SectionTitle eyebrow="Traçabilité" title="Historique des modifications" /></div>
+            <ol className="divide-y divide-[#f3eeeb]">
                 {historique.map((log) => <HistoryEntry key={log.id} log={log} format={format} canViewArticles={canViewArticles} />)}
-                                {historique.length === 0 && <li className="px-6 py-10 text-center text-sm text-[#718177]">Aucune modification enregistrée.</li>}
+                                {historique.length === 0 && <li className="px-6 py-10 text-center text-sm text-[#807872]">Aucune modification enregistrée.</li>}
             </ol>
         </section>
     </div>;
@@ -170,27 +170,27 @@ function HistoryEntry({ log, format, canViewArticles }) {
     return <li className="px-6 py-5 sm:px-8">
         <div className="flex flex-wrap items-center gap-3">
             <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-bold ${tone}`}>{label}</span>
-            <p className="text-sm font-semibold text-[#243d30]">{log.user_name || 'Système'}</p>
-            <p className="text-xs text-[#718177]">{formatDateTime(log.created_at)}</p>
+            <p className="text-sm font-semibold text-[#3c2e25]">{log.user_name || 'Système'}</p>
+            <p className="text-xs text-[#807872]">{formatDateTime(log.created_at)}</p>
         </div>
         {log.motif && <p className="mt-3 rounded-xl border border-sky-100 bg-sky-50 px-4 py-2.5 text-sm text-sky-900"><span className="font-bold">Motif : </span>{log.motif}</p>}
-        {isArticle && <p className="mt-3 text-sm text-[#294337]">
+        {isArticle && <p className="mt-3 text-sm text-[#42342a]">
             {canViewArticles && article.article_id ? <Link href={route('articles.show', article.article_id)} className="font-semibold text-brand-600">{article.article || `Article #${article.article_id}`}</Link> : <span className="font-semibold">{article.article || `Article #${article.article_id}`}</span>}
-            {article.numero_inventaire && <span className="ml-2 font-mono text-xs text-[#718177]">Inv. {article.numero_inventaire}</span>}
+            {article.numero_inventaire && <span className="ml-2 font-mono text-xs text-[#807872]">Inv. {article.numero_inventaire}</span>}
         </p>}
         {fields.length > 0 && <ul className="mt-3 space-y-1.5 text-sm">{fields.map((field) => <li key={field} className="flex flex-wrap gap-x-2">
-            <span className="font-semibold text-[#294337]">{FIELD_LABELS[field] || field} :</span>
-            {log.event === 'updated' && <><span className="text-red-700 line-through">{format(field, log.old_values?.[field])}</span><span className="text-[#819087]">→</span></>}
+            <span className="font-semibold text-[#42342a]">{FIELD_LABELS[field] || field} :</span>
+            {log.event === 'updated' && <><span className="text-red-700 line-through">{format(field, log.old_values?.[field])}</span><span className="text-[#8f8782]">→</span></>}
             <span className={log.event === 'deleted' ? 'text-red-700' : 'text-emerald-800'}>{format(field, (log.event === 'deleted' ? log.old_values : log.new_values)?.[field])}</span>
         </li>)}</ul>}
     </li>;
 }
 
-function TabButton({ active, onClick, children }) { return <button type="button" role="tab" aria-selected={active} onClick={onClick} className={`flex flex-1 items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold transition sm:flex-none ${active ? 'bg-[#1b503a] text-white shadow-sm' : 'text-[#5c7163] hover:bg-[#edf4ee]'}`}>{children}</button>; }
+function TabButton({ active, onClick, children }) { return <button type="button" role="tab" aria-selected={active} onClick={onClick} className={`flex flex-1 items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold transition sm:flex-none ${active ? 'bg-[#c2410c] text-white shadow-sm' : 'text-[#70655d] hover:bg-[#fff7ed]'}`}>{children}</button>; }
 function formatDateTime(value) { return value ? new Date(value).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '-'; }
 
-function SectionTitle({ eyebrow, title }) { return <div><p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#819087]">{eyebrow}</p><h2 className="mt-1 text-lg font-bold tracking-tight text-[#1b3328]">{title}</h2></div>; }
-function Pill({ label, value }) { return <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-emerald-50"><span className="text-emerald-100/65">{label}: </span>{value || '-'}</span>; }
-function DataLine({ label, value }) { return <div className="mb-5 last:mb-0"><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#839187]">{label}</p><p className="mt-1 break-words text-sm font-semibold text-[#294337]">{value || '-'}</p></div>; }
-function DateCard({ label, corrected, source }) { return <div className="rounded-2xl border border-[#dce5dd] bg-[#fbfdfb] p-5"><p className="text-xs font-bold uppercase tracking-[0.14em] text-[#718177]">{label}</p><p className="mt-3 text-xl font-bold text-[#1b503a]">{formatDate(corrected)}</p><div className="mt-4 border-t border-[#e4ece5] pt-3"><p className="text-xs text-[#819087]">Valeur dans le fichier DBF</p><p className="mt-1 font-mono text-sm font-semibold text-[#5a6e60]">{source || '-'}</p></div></div>; }
+function SectionTitle({ eyebrow, title }) { return <div><p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8f8782]">{eyebrow}</p><h2 className="mt-1 text-lg font-bold tracking-tight text-[#32251c]">{title}</h2></div>; }
+function Pill({ label, value }) { return <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-brand-50"><span className="text-brand-100/65">{label}: </span>{value || '-'}</span>; }
+function DataLine({ label, value }) { return <div className="mb-5 last:mb-0"><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#908984]">{label}</p><p className="mt-1 break-words text-sm font-semibold text-[#42342a]">{value || '-'}</p></div>; }
+function DateCard({ label, corrected, source }) { return <div className="rounded-2xl border border-[#eadfd7] bg-[#fefcfa] p-5"><p className="text-xs font-bold uppercase tracking-[0.14em] text-[#807872]">{label}</p><p className="mt-3 text-xl font-bold text-[#c2410c]">{formatDate(corrected)}</p><div className="mt-4 border-t border-[#f0e6e0] pt-3"><p className="text-xs text-[#8f8782]">Valeur dans le fichier DBF</p><p className="mt-1 font-mono text-sm font-semibold text-[#6d625b]">{source || '-'}</p></div></div>; }
 function formatDate(value) { if (!value) return '-'; const [year, month, day] = value.split('-'); return day && month && year ? `${day}/${month}/${year}` : value; }

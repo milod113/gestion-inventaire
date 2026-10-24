@@ -11,7 +11,7 @@ body *:not(html):not(style):not(br):not(tr):not(code) {
 body {
     -webkit-text-size-adjust: none;
     background-color: #ffffff;
-    color: #3f4f45;
+    color: #4e4640;
     height: 100%;
     line-height: 1.4;
     margin: 0;
@@ -28,7 +28,7 @@ blockquote {
 }
 
 a {
-    color: #1b503a;
+    color: #c2410c;
 }
 
 a img {
@@ -38,7 +38,7 @@ a img {
 /* Typography */
 
 h1 {
-    color: #1b3328;
+    color: #32251c;
     font-size: 22px;
     font-weight: bold;
     margin-top: 0;
@@ -80,7 +80,7 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 100%;
-    background-color: #f4f6f3;
+    background-color: #f8f4f1;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -98,8 +98,8 @@ img {
 /* Header */
 
 .header {
-    background-color: #12352a;
-    border-bottom: 4px solid #e5ad45;
+    background-color: #7c2d12;
+    border-bottom: 4px solid #fbbf24;
     padding: 28px 0 24px;
     text-align: center;
 }
@@ -119,7 +119,7 @@ img {
 }
 
 .brand-sub {
-    color: #f5c86c;
+    color: #fcd34d;
     display: block;
     font-size: 12px;
     letter-spacing: 1.4px;
@@ -143,9 +143,9 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 100%;
-    background-color: #f4f6f3;
-    border-bottom: 1px solid #f4f6f3;
-    border-top: 1px solid #f4f6f3;
+    background-color: #f8f4f1;
+    border-bottom: 1px solid #f8f4f1;
+    border-top: 1px solid #f8f4f1;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -194,7 +194,7 @@ img {
 }
 
 .footer p {
-    color: #718177;
+    color: #807872;
     font-size: 12px;
     text-align: center;
 }
@@ -259,11 +259,11 @@ img {
 
 .button-blue,
 .button-primary {
-    background-color: #1b503a;
-    border-bottom: 8px solid #1b503a;
-    border-left: 18px solid #1b503a;
-    border-right: 18px solid #1b503a;
-    border-top: 8px solid #1b503a;
+    background-color: #c2410c;
+    border-bottom: 8px solid #c2410c;
+    border-left: 18px solid #c2410c;
+    border-right: 18px solid #c2410c;
+    border-top: 8px solid #c2410c;
 }
 
 .button-green,
@@ -287,12 +287,12 @@ img {
 /* Panels */
 
 .panel {
-    border-left: #1b503a solid 4px;
+    border-left: #c2410c solid 4px;
     margin: 21px 0;
 }
 
 .panel-content {
-    background-color: #f4f6f3;
+    background-color: #f8f4f1;
     color: #52525b;
     padding: 16px;
 }

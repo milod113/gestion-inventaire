@@ -26,23 +26,24 @@ export default {
                 line: token('line'),
                 ink: token('ink'),
                 muted: token('muted'),
+                // Orange theme (Tailwind orange scale): 700 is the primary button, 600/500 the accents.
                 brand: {
-                    50: '#eef6f1',
-                    100: '#d6eadd',
-                    200: '#afd4bd',
-                    300: '#7fb899',
-                    400: '#4f9874',
-                    500: '#2f7654',
-                    600: '#236246',
-                    700: '#1b503a',
-                    800: '#12352a',
-                    900: '#0b241c',
-                    950: '#06170f',
+                    50: '#fff7ed',
+                    100: '#ffedd5',
+                    200: '#fed7aa',
+                    300: '#fdba74',
+                    400: '#fb923c',
+                    500: '#f97316',
+                    600: '#ea580c',
+                    700: '#c2410c',
+                    800: '#9a3412',
+                    900: '#7c2d12',
+                    950: '#431407',
                 },
                 gold: {
-                    300: '#f3c361',
-                    400: '#e5ad45',
-                    500: '#c98f2a',
+                    300: '#fcd34d',
+                    400: '#fbbf24',
+                    500: '#d97706',
                 },
             },
             borderRadius: {
@@ -50,7 +51,7 @@ export default {
                 '3xl': '1rem',
             },
             boxShadow: {
-                card: '0 1px 2px rgb(16 24 20 / 0.04), 0 1px 3px rgb(16 24 20 / 0.06)',
+                card: '0 1px 2px rgb(41 28 20 / 0.05), 0 1px 3px rgb(41 28 20 / 0.08)',
             },
             keyframes: {
                 // Petite oscillation de la cloche quand des rappels sont a traiter.

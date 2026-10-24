@@ -35,7 +35,7 @@ export default function Show({ service, articles, summary, filters }) {
                 </form>
             </section>
 
-            <section className="overflow-hidden rounded-3xl border border-line bg-surface shadow-xl shadow-[#173126]/5">
+            <section className="overflow-hidden rounded-3xl border border-line bg-surface shadow-xl shadow-[#431407]/5">
                 <div className="flex flex-col gap-4 border-b border-line bg-subtle px-6 py-5 xl:flex-row xl:items-center xl:justify-between">
                     <div>
                         <p className="text-xs font-bold uppercase tracking-[.16em] text-muted">Service {service.code}</p>

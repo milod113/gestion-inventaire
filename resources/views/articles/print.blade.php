@@ -5,23 +5,23 @@
     <title>Fiche d'inventaire</title>
     <style>
         @page { size: A4 landscape; margin: 9mm 10mm 14mm; }
-        body { color: #202923; font-family: DejaVu Sans, sans-serif; font-size: 8px; }
-        .masthead { width: 100%; border-bottom: 2px solid #285b43; margin-bottom: 10px; padding-bottom: 8px; }
+        body { color: #292420; font-family: DejaVu Sans, sans-serif; font-size: 8px; }
+        .masthead { width: 100%; border-bottom: 2px solid #c2410c; margin-bottom: 10px; padding-bottom: 8px; }
         .masthead td { vertical-align: middle; }
         .logo { width: 58px; height: 58px; }
         .institution { text-align: center; line-height: 1.55; }
-        .institution .chu { color: #173e2d; font-size: 14px; font-weight: bold; text-transform: uppercase; }
+        .institution .chu { color: #9a3412; font-size: 14px; font-weight: bold; text-transform: uppercase; }
         .institution .direction { font-size: 10px; font-weight: bold; text-transform: uppercase; }
         .institution .office { font-size: 9px; }
         .meta { width: 100%; margin: 10px 0; }
         .meta td { padding: 3px 0; }
-        .title { margin: 10px 0 3px; color: #173e2d; text-align: center; font-size: 13px; font-weight: bold; text-transform: uppercase; }
-        .subtitle { margin: 0 0 10px; color: #58675e; text-align: center; font-size: 8px; }
-        .service-heading { margin: 12px 0 0; padding: 6px 8px; border: 1px solid #285b43; background: #e8efe9; color: #173e2d; font-size: 9px; font-weight: bold; page-break-after: avoid; }
-        .service-heading small { color: #58675e; font-size: 7px; font-weight: normal; }
+        .title { margin: 10px 0 3px; color: #9a3412; text-align: center; font-size: 13px; font-weight: bold; text-transform: uppercase; }
+        .subtitle { margin: 0 0 10px; color: #665e59; text-align: center; font-size: 8px; }
+        .service-heading { margin: 12px 0 0; padding: 6px 8px; border: 1px solid #c2410c; background: #f3eae4; color: #9a3412; font-size: 9px; font-weight: bold; page-break-after: avoid; }
+        .service-heading small { color: #665e59; font-size: 7px; font-weight: normal; }
         table.data { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 8px; }
-        .data th, .data td { border: 1px solid #829087; padding: 5px 4px; vertical-align: top; overflow-wrap: break-word; }
-        .data th { background: #f4f7f4; color: #173e2d; text-align: center; font-size: 11px; }
+        .data th, .data td { border: 1px solid #8f8883; padding: 5px 4px; vertical-align: top; overflow-wrap: break-word; }
+        .data th { background: #f9f5f2; color: #9a3412; text-align: center; font-size: 11px; }
         .data td { font-size: 11px; }
         .data .description { width: 22%; }
         .data .movement { width: 9%; text-align: center; }
@@ -32,7 +32,7 @@
         .data .inventory { width: 15%; }
         .data tr { page-break-inside: avoid; }
         thead { display: table-header-group; }
-        .footer { position: fixed; bottom: -8mm; left: 0; right: 0; color: #637168; font-size: 7px; text-align: right; }
+        .footer { position: fixed; bottom: -8mm; left: 0; right: 0; color: #706964; font-size: 7px; text-align: right; }
     </style>
 </head>
 <body>

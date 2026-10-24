@@ -22,7 +22,7 @@ export default function Edit({ mustVerifyEmail, status, telephone }) {
 
             <div className="px-5 pb-14 pt-7 lg:px-10">
                 <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[320px_1fr] lg:items-start">
-                    <aside className="overflow-hidden rounded-3xl border border-line bg-surface shadow-xl shadow-[#173126]/5 lg:sticky lg:top-6">
+                    <aside className="overflow-hidden rounded-3xl border border-line bg-surface shadow-xl shadow-[#431407]/5 lg:sticky lg:top-6">
                         <div className="h-20 bg-gradient-to-br from-brand-800 to-brand-600" />
                         <div className="-mt-10 px-6 pb-6">
                             <span className="grid h-20 w-20 place-items-center rounded-2xl border-4 border-surface bg-gold-400 text-3xl font-bold text-slate-900 shadow-md">
@@ -63,7 +63,7 @@ export default function Edit({ mustVerifyEmail, status, telephone }) {
 
 function Card({ eyebrow, title, description, children }) {
     return (
-        <section className="overflow-hidden rounded-3xl border border-line bg-surface shadow-xl shadow-[#173126]/5">
+        <section className="overflow-hidden rounded-3xl border border-line bg-surface shadow-xl shadow-[#431407]/5">
             <header className="border-b border-line bg-subtle px-6 py-5">
                 <p className="text-xs font-bold uppercase tracking-[.16em] text-muted">{eyebrow}</p>
                 <h2 className="mt-1 text-xl font-bold text-ink">{title}</h2>

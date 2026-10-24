@@ -4,21 +4,21 @@
 
 @layer base {
     :root {
-        --canvas: 246 248 247;
+        --canvas: 250 247 244;
         --surface: 255 255 255;
-        --subtle: 241 245 242;
-        --line: 227 233 229;
-        --ink: 22 36 29;
-        --muted: 107 122 113;
+        --subtle: 245 240 235;
+        --line: 234 225 216;
+        --ink: 41 28 20;
+        --muted: 120 105 94;
         color-scheme: light;
     }
     html.dark {
-        --canvas: 14 17 21;
-        --surface: 23 27 33;
-        --subtle: 30 35 43;
-        --line: 42 48 58;
-        --ink: 232 236 241;
-        --muted: 149 160 174;
+        --canvas: 20 16 13;
+        --surface: 31 25 21;
+        --subtle: 41 33 28;
+        --line: 60 50 43;
+        --ink: 246 239 233;
+        --muted: 170 157 146;
         color-scheme: dark;
     }
     body { background: rgb(var(--canvas)); color: rgb(var(--ink)); font-feature-settings: 'cv11', 'ss01'; }
@@ -28,16 +28,17 @@
     * { scrollbar-width: thin; scrollbar-color: rgb(var(--line)) transparent; }
 
     /* Dark-mode mapping for pages that still use hard-coded light hex colors */
-    .dark [class*="bg-white"], .dark [class*="bg-[#f4"], .dark [class*="bg-[#f5"], .dark [class*="bg-[#f7"], .dark [class*="bg-[#f8"], .dark [class*="bg-[#fb"], .dark [class*="bg-[#fc"], .dark [class*="bg-[#edf"], .dark [class*="bg-emerald-50"] { background-color: rgb(var(--surface)) !important; }
-    .dark [class*="border-[#d"], .dark [class*="border-emerald-"], .dark [class*="border-gray-"] { border-color: rgb(var(--line)) !important; }
-    .dark [class*="divide-[#e"] > * + * { border-color: rgb(var(--line)) !important; }
-    .dark [class*="text-[#1"], .dark [class*="text-[#2"], .dark [class*="text-[#3"], .dark [class*="text-gray-"] { color: rgb(var(--ink)) !important; }
-    .dark [class*="text-[#5"], .dark [class*="text-[#6"], .dark [class*="text-[#7"], .dark [class*="text-[#8"] { color: rgb(var(--muted)) !important; }
+    .dark [class*="bg-white"], .dark [class*="bg-[#f3eeeb]"], .dark [class*="bg-[#f8f4f1]"], .dark [class*="bg-[#fbf8f6]"], .dark [class*="bg-[#fefcfa]"], .dark [class*="bg-[#fff7ed]"], .dark [class*="bg-emerald-50"] { background-color: rgb(var(--surface)) !important; }
+    .dark [class*="border-[#e7d9cf]"], .dark [class*="border-[#eadfd7]"], .dark [class*="border-emerald-"], .dark [class*="border-gray-"] { border-color: rgb(var(--line)) !important; }
+    .dark [class*="divide-[#f0e9e4]"] > * + *, .dark [class*="divide-[#f3eeeb]"] > * + * { border-color: rgb(var(--line)) !important; }
+    .dark [class*="text-[#32251c]"], .dark [class*="text-[#36558a]"], .dark [class*="text-[#382a21]"], .dark [class*="text-[#3c2e25]"], .dark [class*="text-[#42342a]"], .dark [class*="text-[#431407]"], .dark [class*="text-[#4f3e33]"], .dark [class*="text-[#514137]"], .dark [class*="text-[#c2410c]"], .dark [class*="text-gray-"] { color: rgb(var(--ink)) !important; }
+    .dark [class*="text-[#665b53]"], .dark [class*="text-[#6d625b]"], .dark [class*="text-[#70655d]"], .dark [class*="text-[#73511c]"], .dark [class*="text-[#756a63]"], .dark [class*="text-[#807872]"], .dark [class*="text-[#867e79]"], .dark [class*="text-[#8f8782]"], .dark [class*="text-[#908984]"], .dark [class*="text-[#9a908a]"] { color: rgb(var(--muted)) !important; }
+    .dark [class*="text-[#c2410c]"] { color: #fb923c !important; }
     .dark input, .dark select, .dark textarea { background: rgb(var(--canvas)) !important; border-color: rgb(var(--line)) !important; color: rgb(var(--ink)) !important; }
-    .dark button[class*="bg-white"], .dark a[class*="bg-white"] { background-color: #e7ebf0 !important; color: #172018 !important; }
-    .dark button[class*="bg-white"] *, .dark a[class*="bg-white"] * { color: #172018 !important; }
-    .dark a[class*="bg-[#e9f3ec]"], .dark button[class*="bg-[#e9f3ec]"], .dark a[class*="bg-[#eef2f9]"], .dark button[class*="bg-[#eef2f9]"] { color: #183e2c !important; }
-    .dark a[class*="bg-[#e9f3ec]"] *, .dark button[class*="bg-[#e9f3ec]"] *, .dark a[class*="bg-[#eef2f9]"] *, .dark button[class*="bg-[#eef2f9]"] * { color: inherit !important; }
+    .dark button[class*="bg-white"], .dark a[class*="bg-white"] { background-color: #e7ebf0 !important; color: #201b17 !important; }
+    .dark button[class*="bg-white"] *, .dark a[class*="bg-white"] * { color: #201b17 !important; }
+    .dark a[class*="bg-[#ffedd5]"], .dark button[class*="bg-[#ffedd5]"], .dark a[class*="bg-[#eef2f9]"], .dark button[class*="bg-[#eef2f9]"] { color: #3c281a !important; }
+    .dark a[class*="bg-[#ffedd5]"] *, .dark button[class*="bg-[#ffedd5]"] *, .dark a[class*="bg-[#eef2f9]"] *, .dark button[class*="bg-[#eef2f9]"] * { color: inherit !important; }
     .dark [class*="shadow"] { --tw-shadow-color: rgba(0, 0, 0, .35); }
 }
 
