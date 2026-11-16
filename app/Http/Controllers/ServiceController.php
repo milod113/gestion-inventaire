@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ArticlesSpreadsheet;
 use App\Models\Service;
 use App\Models\Article;
 use App\Models\Facture;
@@ -10,9 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use OpenSpout\Common\Entity\Row;
-use OpenSpout\Common\Entity\Style\Style;
-use OpenSpout\Writer\XLSX\Writer;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ServiceController extends Controller
@@ -79,36 +77,9 @@ class ServiceController extends Controller
     public function export(Request $request, Service $service): StreamedResponse
     {
         $search = $request->string('search')->trim()->value();
-        $articles = $this->serviceArticles($service, $search, $request->string('source')->value())
-            ->orderByDesc('date_mouvement')
-            ->orderByDesc('id');
-        $filename = sprintf('articles-service-%s-%s.xlsx', $service->code, now()->format('Y-m-d'));
+        $articles = $this->serviceArticles($service, $search, $request->string('source')->value());
 
-        return response()->streamDownload(function () use ($articles, $service) {
-            $writer = new Writer();
-            $writer->openToFile('php://output');
-            $writer->addRow(Row::fromValues([
-                'Code service', 'Service', 'Designation', 'Mouvement', 'Date mouvement',
-                'Qte entree', 'Qte sortie', 'N° bon', 'N° inventaire', 'Observation',
-            ], (new Style())->setFontBold()));
-
-            foreach ($articles->lazyById(500) as $article) {
-                $writer->addRow(Row::fromValues([
-                    $service->code,
-                    $service->name,
-                    $article->description,
-                    $article->mouvement,
-                    $article->date_mouvement?->format('d/m/Y'),
-                    $article->quantite_entree === null ? null : (float) $article->quantite_entree,
-                    $article->quantite_sortie === null ? null : (float) $article->quantite_sortie,
-                    $article->numero_bon,
-                    $article->numero_inventaire,
-                    $article->observation,
-                ]));
-            }
-
-            $writer->close();
-        }, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+        return ArticlesSpreadsheet::download($articles, ['search' => $search, 'service' => $service]);
     }
 
     /** Same rule as the articles list: linked to the service, or still carrying its source code. */

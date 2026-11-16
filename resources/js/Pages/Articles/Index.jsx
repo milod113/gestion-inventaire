@@ -80,6 +80,7 @@ export default function Index({ articles, summary, services, filters }) {
                     <div className="flex flex-wrap items-center justify-end gap-2">
                         <LabelPrintControls params={selected.length ? { ids: selected } : filters} label={selected.length ? `Étiquettes (${selected.length})` : 'Étiquettes (filtre)'} />
                         <a href={route('articles.print', filters)} target="_blank" rel="noreferrer" className="btn-secondary py-3"><PrinterIcon />Imprimer la liste</a>
+                        <a href={route('articles.export', filters)} className="btn-secondary py-3"><DownloadIcon />Exporter Excel</a>
                     </div>
                 </div>
 
@@ -131,6 +132,7 @@ function formatDate(value) { const dateOnly = String(value).match(/^(\d{4})-(\d{
 
 function Svg({ className = 'h-4 w-4', children }) { return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>; }
 function SearchIcon({ className }) { return <Svg className={className}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></Svg>; }
+function DownloadIcon() { return <Svg><path d="M12 3v12M7 10l5 5 5-5M4 21h16" /></Svg>; }
 function PrinterIcon() { return <Svg><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 14h12v7H6z" /></Svg>; }
 function BarcodeIcon() { return <Svg className="h-3.5 w-3.5 text-muted"><path d="M4 5v14M8 5v14M11 5v14M15 5v14M18 5v14M21 5v14" /></Svg>; }
 function EyeIcon() { return <Svg><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></Svg>; }

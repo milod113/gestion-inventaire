@@ -51,7 +51,7 @@ class ServiceShowTest extends TestCase
         Article::create(['description' => 'CHAISE', 'numero_inventaire' => '300']);
 
         $response = $this->get(route('services.export', ['service' => $service, 'search' => 'LIT']));
-        $response->assertOk()->assertDownload('articles-service-38-'.now()->format('Y-m-d').'.xlsx');
+        $response->assertOk()->assertDownload('fiche-inventaire-service-38-'.now()->format('Y-m-d').'.xlsx');
 
         $path = tempnam(sys_get_temp_dir(), 'xlsx');
         file_put_contents($path, $response->streamedContent());
@@ -67,9 +67,9 @@ class ServiceShowTest extends TestCase
         unlink($path);
 
         $this->assertCount(2, $rows); // header + the one article matching "LIT"
-        $this->assertSame('Designation', $rows[0][2]);
+        $this->assertSame('Désignation', $rows[0][2]);
         $this->assertSame('LIT', $rows[1][2]);
-        $this->assertEquals(3, $rows[1][5]);
-        $this->assertSame('100', (string) $rows[1][8]);
+        $this->assertEquals(3, $rows[1][4]);
+        $this->assertSame('100', (string) $rows[1][7]);
     }
 }

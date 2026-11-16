@@ -2,19 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ArticlesSpreadsheet;
 use App\Models\Article;
 use App\Models\Facture;
 use App\Models\Rappel;
 use App\Models\Service;
+use App\Support\FicheInventairePdf;
+use App\Support\PdfSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Picqer\Barcode\BarcodeGeneratorPNG;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ArticleController extends Controller
 {
@@ -90,59 +95,27 @@ class ArticleController extends Controller
 
     public function print(Request $request)
     {
-        $articles = $this->filteredArticles($request)
-            ->with('service:id,code,name')
-            ->orderByDesc('date_mouvement')
-            ->get();
-
-        $servicesByCode = Service::query()->get(['id', 'code', 'name'])
-            ->keyBy(fn (Service $service) => (string) $service->code);
-        $resolveService = function (Article $article) use ($servicesByCode) {
-            if ($article->service) {
-                return $article->service;
-            }
-
-            $code = trim((string) $article->service_code_source);
-            $key = ctype_digit($code) ? (string) ((int) $code) : $code;
-
-            return $servicesByCode->get($key);
-        };
-
-        $serviceGroups = $articles->groupBy(function (Article $article) use ($resolveService) {
-            $service = $resolveService($article);
-
-            return $service
-                ? 'service:'.$service->id
-                : 'code:'.(trim((string) $article->service_code_source) ?: 'sans-service');
-        })->map(function ($group) use ($resolveService) {
-            $firstArticle = $group->first();
-            $service = $resolveService($firstArticle);
-
-            return [
-                'code' => $service?->code ?? $firstArticle->service_code_source,
-                'name' => $service?->name ?? 'Service non référencé',
-                'articles' => $group,
-            ];
-        })->sortBy(fn ($group) => sprintf('%s %s', $group['code'] ?? '', $group['name']))->values();
-
+        $articles = $this->filteredArticles($request)->with('service:id,code,name')->get();
         $serviceCode = $request->string('service_code')->trim()->value();
-        $service = $serviceCode ? Service::query()->where('code', $serviceCode)->first() : null;
-        $logoPath = public_path('Logo CHU.jpg');
-        $logo = is_file($logoPath)
-            ? 'data:image/jpeg;base64,'.base64_encode(file_get_contents($logoPath))
-            : null;
+        $settings = PdfSettings::current();
 
-        return Pdf::loadView('articles.print', [
-            'articles' => $articles,
-            'serviceGroups' => $serviceGroups,
+        return FicheInventairePdf::make($articles, $settings, [
             'search' => $request->string('search')->trim()->value(),
-            'service' => $service,
+            'service' => $serviceCode ? Service::query()->where('code', $serviceCode)->first() : null,
             'serviceCode' => $serviceCode,
-            'generatedAt' => now()->format('d/m/Y H:i'),
-            'logo' => $logo,
-        ])
-            ->setPaper('a4', 'landscape')
-            ->download('fiche-inventaire.pdf');
+        ])->download((Str::slug($settings['document']['title']) ?: 'fiche-inventaire').'.pdf');
+    }
+
+    /** Excel version of the fiche d'inventaire, with the same filters as the list and the PDF. */
+    public function export(Request $request): StreamedResponse
+    {
+        $serviceCode = $request->string('service_code')->trim()->value();
+
+        return ArticlesSpreadsheet::download($this->filteredArticles($request), [
+            'search' => $request->string('search')->trim()->value(),
+            'service_code' => $serviceCode,
+            'service' => $serviceCode !== '' ? Service::query()->where('code', $serviceCode)->first() : null,
+        ]);
     }
 
     public function labels(Request $request)

@@ -35,6 +35,7 @@ const adminNavigationGroup = {
     items: [
         { label: 'Utilisateurs', description: 'Comptes et roles', href: 'admin.users.index', active: 'admin.users.*', icon: 'shield' },
         { label: 'Journal', description: 'Historique des actions', href: 'admin.journal.index', active: 'admin.journal.*', icon: 'archive' },
+        { label: 'Parametres', description: 'Impressions PDF et exports Excel', href: 'admin.settings.pdf', active: 'admin.settings.*', icon: 'printer' },
     ],
 };
 
@@ -289,6 +290,7 @@ const iconPaths = {
     expand: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M14 10l2 2-2 2" /></>,
     sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4" /></>,
     moon: <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.5 6.5 0 0 0 21 12.8Z" />,
+    printer: <><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 14h12v7H6z" /></>,
 };
 
 function Icon({ name }) {

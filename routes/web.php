@@ -13,6 +13,8 @@ use App\Http\Controllers\DataQualityController;
 use App\Http\Controllers\AdvancedImportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\ExcelSettingsController;
+use App\Http\Controllers\Admin\PdfSettingsController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Models\Article;
 use App\Models\Facture;
@@ -96,6 +98,7 @@ Route::middleware('auth')->group(function () {
         ->middlewareFor(['edit', 'update'], 'permission:fournisseurs.update')
         ->middlewareFor('destroy', 'permission:fournisseurs.delete');
     Route::get('/articles/imprimer', [ArticleController::class, 'print'])->middleware('permission:articles.view')->name('articles.print');
+    Route::get('/articles/export', [ArticleController::class, 'export'])->middleware('permission:articles.view')->name('articles.export');
     Route::get('/articles/etiquettes', [ArticleController::class, 'labels'])->middleware('permission:articles.view')->name('articles.labels');
     Route::get('/articles/suggestions', [ArticleController::class, 'suggestions'])->middleware('permission:articles.view')->name('articles.suggestions');
     Route::resource('articles', ArticleController::class)
@@ -120,6 +123,19 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', AdminUserController::class)->except('show');
         Route::get('/journal', [ActivityLogController::class, 'index'])->name('journal.index');
         Route::patch('/users/{user}/status', [AdminUserController::class, 'toggleStatus'])->name('users.status');
+
+        Route::get('/parametres/pdf', [PdfSettingsController::class, 'edit'])->name('settings.pdf');
+        Route::put('/parametres/pdf', [PdfSettingsController::class, 'update'])->name('settings.pdf.update');
+        Route::post('/parametres/pdf/reinitialiser', [PdfSettingsController::class, 'reset'])->name('settings.pdf.reset');
+        Route::post('/parametres/pdf/apercu', [PdfSettingsController::class, 'preview'])->name('settings.pdf.preview');
+        Route::post('/parametres/pdf/logo', [PdfSettingsController::class, 'uploadLogo'])->name('settings.pdf.logo');
+        Route::delete('/parametres/pdf/logo', [PdfSettingsController::class, 'deleteLogo'])->name('settings.pdf.logo.delete');
+
+        Route::get('/parametres/excel', [ExcelSettingsController::class, 'edit'])->name('settings.excel');
+        Route::put('/parametres/excel', [ExcelSettingsController::class, 'update'])->name('settings.excel.update');
+        Route::post('/parametres/excel/reinitialiser', [ExcelSettingsController::class, 'reset'])->name('settings.excel.reset');
+        Route::post('/parametres/excel/apercu', [ExcelSettingsController::class, 'preview'])->name('settings.excel.preview');
+        Route::post('/parametres/excel/exemple', [ExcelSettingsController::class, 'sample'])->name('settings.excel.sample');
     });
 });
 
