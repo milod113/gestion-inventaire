@@ -5,40 +5,30 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use App\Models\Article;
 use App\Services\ArticleSourceHasher;
-use Symfony\Component\Process\Process;
+use App\Services\DatabaseBackup;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('database:backup {--path=}', function () {
-    $connection = config('database.connections.'.config('database.default'));
-    $dumpPath = 'C:\\xampp\\mysql\\bin\\mysqldump.exe';
-
-    if (($connection['driver'] ?? null) !== 'mysql' || ! is_file($dumpPath)) {
-        $this->error('MySQL ou mysqldump est introuvable.');
-
-        return 1;
-    }
-
-    $directory = $this->option('path') ?: storage_path('app/backups');
-    if (! is_dir($directory)) mkdir($directory, 0755, true);
-    $file = rtrim($directory, '\\/').DIRECTORY_SEPARATOR.'gestion-inventaire-'.now()->format('Y-m-d-His').'.sql';
-    $command = [$dumpPath, '--host='.$connection['host'], '--port='.(string) $connection['port'], '--user='.$connection['username'], '--single-transaction', '--routines', '--events', '--default-character-set=utf8mb4', '--result-file='.$file];
-    if (($connection['password'] ?? '') !== '') $command[] = '--password='.$connection['password'];
-    $command[] = $connection['database'];
-    $process = new Process($command);
-    $process->setTimeout(120);
-    $process->run();
-
-    if (! $process->isSuccessful() || ! is_file($file)) {
-        $this->error('La sauvegarde a echoue.');
+Artisan::command('database:backup', function () {
+    try {
+        $file = DatabaseBackup::fromConfig()->run();
+    } catch (RuntimeException $e) {
+        $this->error('La sauvegarde a echoue : '.$e->getMessage());
 
         return 1;
     }
 
-    $this->info('Sauvegarde creee : '.$file);
-})->purpose('Create a MySQL database backup');
+    $this->info('Sauvegarde creee : '.$file.' ('.round(filesize($file) / 1024 / 1024, 1).' Mo)');
+    foreach (DatabaseBackup::fromConfig()->status()['last_run']['warnings'] ?? [] as $warning) {
+        $this->warn($warning);
+    }
+})->purpose('Back up the MySQL database (compressed, checked, rotated and copied to the second folder)');
+
+// Requires the Windows scheduled task that runs "php artisan schedule:run" every minute (see scripts/scheduler.bat).
+Schedule::command('database:backup')->dailyAt(config('backup.time'))->timezone(config('backup.timezone'))->withoutOverlapping();
 
 Artisan::command('services:import {path?}', function (?string $path = null) {
     $path ??= base_path('data-inventaire/CODES.xlsx');

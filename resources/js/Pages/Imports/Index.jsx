@@ -20,7 +20,7 @@ const statusLabels = {
     previewed: { label: 'A valider', dot: 'bg-amber-500', className: 'text-amber-700 dark:text-amber-300' },
 };
 
-export default function Index({ batches, summary, filters = {} }) {
+export default function Index({ batches, summary, filters = {}, backup = null }) {
     const { flash = {} } = usePage().props;
 
     return (
@@ -31,10 +31,10 @@ export default function Index({ batches, summary, filters = {} }) {
                     title="Importation"
                     description="Chaque archive est analysee et comparee aux donnees existantes, puis validee par vos soins."
                     actions={<>
-                        <a href={route('backups.database')} className="btn-secondary">
+                        {backup && <a href={route('backups.database')} className="btn-secondary" title="Faire une sauvegarde maintenant et la telecharger">
                             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" /></svg>
-                            Sauvegarde SQL
-                        </a>
+                            Sauvegarder maintenant
+                        </a>}
                         <Link href={route('imports.advanced')} className="btn-secondary">Import avance</Link>
                     </>}
                 />
@@ -49,6 +49,11 @@ export default function Index({ batches, summary, filters = {} }) {
                         {flash.success}
                     </div>
                 )}
+                {flash.error && (
+                    <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3.5 text-sm font-medium text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">{flash.error}</div>
+                )}
+
+                {backup && <BackupStatus backup={backup} />}
 
                 <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <StatTile label="Lots analyses" value={summary.analysed} />
@@ -70,6 +75,36 @@ export default function Index({ batches, summary, filters = {} }) {
                 <History batches={batches} filters={filters} />
             </div>
         </AuthenticatedLayout>
+    );
+}
+
+function BackupStatus({ backup }) {
+    const success = backup.last_success;
+    const failed = backup.last_run && !backup.last_run.ok;
+    const warnings = backup.last_run?.ok ? backup.last_run.warnings || [] : [];
+    const tone = backup.stale || failed
+        ? 'border-red-200 bg-red-50 text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200'
+        : warnings.length
+            ? 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200';
+
+    return (
+        <section className={`rounded-2xl border px-5 py-4 text-sm ${tone}`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                <p className="font-semibold">
+                    {success
+                        ? <>Dernière sauvegarde réussie : {dateTime.format(new Date(success.at))} · {(success.size / 1024 / 1024).toFixed(1)} Mo</>
+                        : 'Aucune sauvegarde automatique réussie pour le moment.'}
+                </p>
+                <p className="text-xs opacity-80">
+                    {number.format(backup.daily_count)} quotidienne{backup.daily_count > 1 ? 's' : ''} · {number.format(backup.monthly_count)} mensuelle{backup.monthly_count > 1 ? 's' : ''}
+                    {success?.secondary && <> · copie dans {success.secondary}</>}
+                </p>
+            </div>
+            {failed && <p className="mt-1.5">La dernière tentative a échoué ({dateTime.format(new Date(backup.last_run.at))}) : {backup.last_run.error}</p>}
+            {!failed && backup.stale && success && <p className="mt-1.5">Plus de 48 h sans sauvegarde : vérifiez que la tâche planifiée Windows fonctionne.</p>}
+            {warnings.map((warning) => <p key={warning} className="mt-1.5">{warning}</p>)}
+        </section>
     );
 }
 

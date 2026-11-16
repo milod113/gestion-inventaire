@@ -8,6 +8,7 @@ use App\Models\Fournisseur;
 use App\Models\ImportBatch;
 use App\Models\ImportRow;
 use App\Models\Service;
+use App\Services\DatabaseBackup;
 use App\Services\GestionImportParser;
 use App\Services\FactureImportParser;
 use Illuminate\Http\RedirectResponse;
@@ -36,6 +37,7 @@ class ImportController extends Controller
                 'ready' => (int) (clone $query)->where('status', 'previewed')->sum('ready_rows'),
                 'duplicates' => (int) (clone $query)->sum('duplicate_rows'),
             ],
+            'backup' => request()->user()->can('backups.run') ? DatabaseBackup::fromConfig()->status() : null,
         ]);
     }
 
