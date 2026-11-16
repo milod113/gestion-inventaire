@@ -120,7 +120,9 @@ class DatabaseBackup
         }
         $command[] = $connection['database'];
 
-        $process = new Process($command);
+        // Under "php artisan serve" the worker environment loses SystemRoot as Windows expects it, and
+        // mysqldump then cannot open a network socket (error 2004 / 10106). Passing it explicitly fixes that.
+        $process = new Process($command, null, ['SystemRoot' => getenv('SYSTEMROOT') ?: 'C:\\Windows']);
         $process->setTimeout(600);
         $process->run();
 
